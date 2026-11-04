@@ -44,11 +44,6 @@ function vocabItems(sec){
     return ex.replace(/\{[^}]+\}/, inner.replace(re, "___"));
   };
   E.forEach(e=>{
-    const others = shuffle(E.filter(x=>x!==e && x.m!==e.m));
-    if(others.length>=3){
-      out.push({type:"mc", q:`${e.term} =`, o:[e.m, ...others.slice(0,3).map(x=>x.m)], h:`Example: ${e.ex.replace(/[{}]/g,"")}`, e:`<b>${esc(e.term)}</b> = ${esc(e.m)}.`});
-      out.push({type:"mc", q:`Which one means "${e.m}"?`, o:[e.term, ...shuffle(others).slice(0,3).map(x=>x.term)], h:"Think of an example sentence for each option.", e:`<b>${esc(e.term)}</b> = ${esc(e.m)}.`});
-    }
     [e.ex, e.ex2].filter(Boolean).forEach(ex=>out.push({type:"mc", q:gap(ex,e.key), o:[e.key, ...e.alt], h:`It means: ${e.m}.`, e:`<b>${esc(e.term)}</b> = ${esc(e.m)}.`}));
   });
   return out.concat(sec.items||[]);
@@ -182,7 +177,9 @@ function petPool(){
   ["phrasal","colloc","fixed"].forEach(k=>{
     const seen = new Set(), entries = [];
     EXAMS.forEach(x=>x.weeks.forEach(w=>(w[k]?w[k].entries:[]).forEach(e=>{ if(!seen.has(e.term)){ seen.add(e.term); entries.push(e); } })));
-    if(entries.length>=4) vocabItems({entries, items:[]}).forEach(it=>out.push(it));
+    const items = [];
+    EXAMS.forEach(x=>x.weeks.forEach(w=>(w[k]?w[k].items:[]).forEach(it=>items.push(it))));
+    vocabItems({entries, items}).forEach(it=>out.push(it));
   });
   return out;
 }
