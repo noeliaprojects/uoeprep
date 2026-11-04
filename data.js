@@ -377,7 +377,39 @@ const CLASS_2026_11_11 = {
       {"type":"mc","q":"We waited for an hour, but ___ the bus never came.","o":["in the end","by far","rather than","in terms of"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>in the end</b> = finally."},
       {"type":"mc","q":"You can't text and drive ___.","o":["at the same time","in the long run","by far","on behalf of"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>at the same time</b> = together; also."}
     ]
-  }
+  },
+  tests: [
+    { title:"Less plastic at home",
+      body:"Last month my family decided to [1] plastic. We stopped buying bottled water and [2] a water filter. We also [3] old plastic containers we didn't need. It wasn't easy and it [4], but now we [5] every month. Small changes really [6]!",
+      gaps:[
+        {"k":"phrasal","t":"cut back on","o":["cut back on","look forward to","go beyond","back up"]},
+        {"k":"phrasal","t":"switch to","o":["switched to","gave off","used up","backed up"]},
+        {"k":"phrasal","t":"get rid of","o":["got rid of","tapped into","signed up","gave off"]},
+        {"k":"colloc","t":"take time","o":["took time","posed a threat","set an example","kept track"]},
+        {"k":"colloc","t":"save money","o":["save money","raise concerns","pay the price","pose a threat"]},
+        {"k":"colloc","t":"make a difference","o":["make a difference","run the risk","take time","cause damage"]}
+      ]},
+    { title:"Cars out of the centre",
+      body:"Many cities have [1] on cars in the city centre. [2] complaints about pollution, our city did the same. [3], the air is much cleaner now. At first, some shop owners [4] about losing customers, but [5] most of them are happy. Cars still [6] to people walking in other parts of the city.",
+      gaps:[
+        {"k":"colloc","t":"introduce a ban","o":["introduced a ban","reached a conclusion","kept track","gained insight"]},
+        {"k":"fixed","t":"in response to","o":["In response to","On behalf of","In terms of","By far"]},
+        {"k":"fixed","t":"as a result","o":["As a result","Rather than","By far","In danger of"]},
+        {"k":"colloc","t":"raise concerns","o":["raised concerns","made a difference","set an example","saved money"]},
+        {"k":"fixed","t":"in the end","o":["in the end","by far","rather than","on a large scale"]},
+        {"k":"colloc","t":"pose a threat","o":["pose a threat","take time","save money","set an example"]}
+      ]},
+    { title:"Learning Italian online",
+      body:"In September I [1] for an online Italian course. I'm really [2] my trip to Rome next summer! The course is [3] real conversations, so I've [4] lots of useful expressions. I use an app to [5] new words. [6] price, it's much cheaper than a language school.",
+      gaps:[
+        {"k":"phrasal","t":"sign up","o":["signed up","backed up","gave off","used up"]},
+        {"k":"phrasal","t":"look forward to","o":["looking forward to","giving off","backing up","tapping into"]},
+        {"k":"fixed","t":"based on","o":["based on","rather than","by far","in danger of"]},
+        {"k":"phrasal","t":"pick up","o":["picked up","phased out","given off","backed up"]},
+        {"k":"colloc","t":"keep track of","o":["keep track of","pay the price","pose a threat","cause damage"]},
+        {"k":"fixed","t":"in terms of","o":["In terms of","On behalf of","For the sake of","In the end"]}
+      ]}
+  ]
 };
 
 const CLASS_2026_11_04 = {
@@ -767,7 +799,39 @@ const CLASS_2026_11_04 = {
       {"type":"mc","q":"We didn't plan it. We met ___ in a café.","o":["by chance","on time","at first","on average"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>by chance</b> = without planning it."},
       {"type":"mc","q":"You can always ___ me. I'll never let you down.","o":["rely on","cope with","lead to","demand for"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>rely on</b> = need and trust someone or something."}
     ]
-  }
+  },
+  tests: [
+    { title:"A new hobby",
+      body:"Last year I decided to [1] painting. [2] I wasn't very good, but I [3] every day and slowly got better. Painting helps me [4] stress after work. My sister and I have a lot [5], so now she paints with me. [6] my teacher, I'm ready for my first exhibition!",
+      gaps:[
+        {"k":"phrasal","t":"take up","o":["take up","put up with","end up","break down"]},
+        {"k":"fixed","t":"at first","o":["At first","On time","By chance","For instance"]},
+        {"k":"colloc","t":"make an effort","o":["made an effort","broke a habit","met a deadline","created jobs"]},
+        {"k":"fixed","t":"cope with","o":["cope with","lead to","demand for","rely on"]},
+        {"k":"fixed","t":"in common","o":["in common","on average","at risk","on time"]},
+        {"k":"fixed","t":"according to","o":["According to","Instead of","In addition to","In favour of"]}
+      ]},
+    { title:"Our town and tourism",
+      body:"Tourism has [1] our small town. It has [2] for young people, and new shops have opened. However, it has also [3] house prices, and some families have been [4] of the centre. The council has promised to [5] before the problem gets worse. Most residents are [6] a tourist tax.",
+      gaps:[
+        {"k":"colloc","t":"have an impact on","o":["had a huge impact on","made a habit of","met a deadline","done its best"]},
+        {"k":"colloc","t":"create jobs","o":["created jobs","saved time","broken a habit","met a deadline"]},
+        {"k":"phrasal","t":"drive up","o":["driven up","figured out","ended up","set up"]},
+        {"k":"phrasal","t":"price out","o":["priced out","found out","figured out","looked up"]},
+        {"k":"colloc","t":"take action","o":["take action","keep a promise","break a habit","gain perspective"]},
+        {"k":"fixed","t":"in favour of","o":["in favour of","instead of","according to","in common"]}
+      ]},
+    { title:"Three study tips",
+      body:"These tips will help you [1] when you study. First, [2] reading for ten minutes every day. If you don't know a word, [3] in a dictionary. Second, [4] your phone while you study, because it's very distracting. Third, don't study alone: you can always [5] a friend for help. And remember to hand in your homework [6]!",
+      gaps:[
+        {"k":"colloc","t":"save time","o":["save time","create jobs","boost the economy","reach an agreement"]},
+        {"k":"colloc","t":"make a habit of","o":["make a habit of","come up with","break down","figure out"]},
+        {"k":"phrasal","t":"look up","o":["look it up","set it up","take it up","break it down"]},
+        {"k":"phrasal","t":"cut down on","o":["cut down on","come up with","get on with","dive into"]},
+        {"k":"fixed","t":"rely on","o":["rely on","cope with","lead to","demand for"]},
+        {"k":"fixed","t":"on time","o":["on time","at first","by chance","at risk"]}
+      ]}
+  ]
 };
 
 const CLASS_2026_10_28 = {
@@ -1167,7 +1231,39 @@ const CLASS_2026_10_28 = {
       {"type":"mc","q":"Tickets sell out fast, so buy them ___.","o":["in advance","on purpose","by mistake","at least"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>in advance</b> = before the time."},
       {"type":"mc","q":"You need to practise for ___ 20 minutes a day.","o":["at least","in advance","on purpose","by mistake"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>at least</b> = not less than."}
     ]
-  }
+  },
+  tests: [
+    { title:"A trip that went wrong",
+      body:"Last summer my friends and I [1] at 6 a.m. for a road trip to the coast. After an hour, we got stuck in [2] and didn't move for ages. Then, in the middle of nowhere, we [3] petrol! A farmer stopped to help us, and he [4] to be really kind. In the end we had to [5] our visit to the beach until the next day. Still, I'm really [6] my friends for staying so calm.",
+      gaps:[
+        {"k":"phrasal","t":"set off","o":["set off","gave up","took over","came across"]},
+        {"k":"colloc","t":"heavy traffic","o":["heavy traffic","the appeal","a decision","a record"]},
+        {"k":"phrasal","t":"run out of","o":["ran out of","turned into","called off","looked into"]},
+        {"k":"phrasal","t":"turn out (to be)","o":["turned out","turned up","turned down","turned back"]},
+        {"k":"phrasal","t":"put off","o":["put off","got over","looked into","turned into"]},
+        {"k":"fixed","t":"be proud of","o":["proud of","keen on","in charge of","aware of"]}
+      ]},
+    { title:"Sports day",
+      body:"Every year, our school sports day [1] in June. This year, over 200 students [2] in the races. A girl from my class [3] in the 100 metres: she ran [4] almost 30 km/h! Our football team, however, was [5] in the first round. Next year I'd like to [6] at the long jump.",
+      gaps:[
+        {"k":"colloc","t":"take place","o":["takes place","takes part","makes progress","catches a cold"]},
+        {"k":"colloc","t":"take part in","o":["took part","took place","paid attention","made a decision"]},
+        {"k":"colloc","t":"set a record","o":["set a new record","did research","caught a cold","paid attention"]},
+        {"k":"fixed","t":"at a speed of","o":["at a speed of","at a temperature of","in charge of","by mistake"]},
+        {"k":"phrasal","t":"be knocked out (of)","o":["knocked out","turned out","called off","given up"]},
+        {"k":"colloc","t":"have a go (at)","o":["have a go","take place","set off","look into"]}
+      ]},
+    { title:"My favourite café",
+      body:"I'm not very [1] working at home, so I often go to a café near my flat. For me, [2] working there is the coffee and the noise around me. In the afternoons, the café also [3] a small library, so it's quiet. You have to book a table [4] because it gets busy. Last week I took someone else's laptop [5]. Luckily, the woman who is [6] the café helped me find mine.",
+      gaps:[
+        {"k":"fixed","t":"be keen on","o":["keen on","in charge of","at least","on purpose"]},
+        {"k":"colloc","t":"the appeal of","o":["the appeal of","heavy traffic","a cold","progress"]},
+        {"k":"fixed","t":"serve as","o":["serves as","depends on","insists on","succeeds in"]},
+        {"k":"fixed","t":"in advance","o":["in advance","by mistake","at least","on purpose"]},
+        {"k":"fixed","t":"by mistake","o":["by mistake","in advance","at least","at a speed"]},
+        {"k":"fixed","t":"in charge of","o":["in charge of","by mistake","at least","in advance"]}
+      ]}
+  ]
 };
 
 const EXAMS = [

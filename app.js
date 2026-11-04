@@ -5,7 +5,7 @@ const STORE = "uoe:v3";
 const MIXED_SIZE = 20;
 const VOCAB_SIZE = 24;
 
-let state = {best:{}, coins:0, pets:{}, active:null};
+let state = {best:{}, coins:0, pets:{}, active:null, cards:{}, lastTest:{}};
 try{ const raw = localStorage.getItem(STORE); if(raw) state = Object.assign(state, JSON.parse(raw)); }catch(e){}
 function save(){ try{ localStorage.setItem(STORE, JSON.stringify(state)); }catch(e){} }
 
@@ -60,7 +60,7 @@ function exHTML(ex){ return esc(ex).replace(/\{([^}]+)\}/, "<b>$1</b>"); }
 let view = {name:"exams"};
 function go(v){ view = v; render(); window.scrollTo(0,0); }
 function render(){
-  ({exams, weeks, week:weekView, grammar, explainList, explain, exerciseList, vocab, practice, result, pet, shop, myPets})[view.name]();
+  ({exams, weeks, week:weekView, grammar, explainList, explain, exerciseList, vocab, practice, result, pet, shop, myPets, flash, study, ftest})[view.name]();
 }
 function header(backTo, crumb){
   return `<div class="top"><button type="button" class="back" id="back">← Back</button>${crumb?`<span class="label crumb">${esc(crumb)}</span>`:""}</div>`;
@@ -212,12 +212,14 @@ function weekView(){
     {id:"p", t:"Phrasal verbs", s:`${w.phrasal.entries.length} phrasal verbs`},
     {id:"c", t:"Collocations", s:`${w.colloc.entries.length} collocations`},
     {id:"f", t:"Fixed phrases", s:`${w.fixed.entries.length} phrases`}
-  ])}`;
+  ])}
+  <button type="button" class="menu-btn flash" id="fl"><span class="t">Flashcards</span><span class="s">${learned(w)[0]} / ${learned(w)[1]} learned</span><span class="arr" aria-hidden="true">→</span></button>`;
   bindBack({name:"weeks", exam:view.exam});
   document.getElementById("g").onclick=()=>go(at({name:"grammar"}));
   document.getElementById("p").onclick=()=>go(at({name:"vocab", k:"phrasal"}));
   document.getElementById("c").onclick=()=>go(at({name:"vocab", k:"colloc"}));
   document.getElementById("f").onclick=()=>go(at({name:"vocab", k:"fixed"}));
+  document.getElementById("fl").onclick=()=>go(at({name:"flash", f:"all"}));
 }
 
 /* grammar: explanation or exercises */
@@ -288,6 +290,153 @@ function vocab(){
     </div>`).join("")}</div>`;
   bindBack(at({name:"week"}));
   document.getElementById("drill").onclick=()=>startSession({key, title:VOCAB[view.k], back:at({name:"vocab", k:view.k}), vocabK:view.k, items:vocabSession(sec)});
+}
+
+/* ── flashcards ── */
+const KIND = {phrasal:"Phrasal verb", colloc:"Collocation", fixed:"Fixed phrase"};
+const FILTERS = [["all","All"],["phrasal","Phrasal verbs"],["colloc","Collocations"],["fixed","Fixed phrases"]];
+const cardId = (w,k,term) => `${w.date}|${k}|${term}`;
+function cardsOf(w, f){
+  return ["phrasal","colloc","fixed"].filter(k=>f==="all"||f===k)
+    .flatMap(k=>w[k].entries.map(e=>({k, e, id:cardId(w,k,e.term)})));
+}
+function learned(w){ const c = cardsOf(w,"all"); return [c.filter(x=>state.cards[x.id]===2).length, c.length]; }
+function flash(){
+  const w = week(), f = view.f || "all", cards = cardsOf(w,f);
+  const known = cards.filter(c=>state.cards[c.id]===2).length;
+  $app.innerHTML = `
+  ${header(null, weekName(w))}
+  <div class="unit-head"><h2>Flashcards</h2></div>
+  <div class="chips tabs">${FILTERS.map(([k,t])=>`<button type="button" class="chip" data-f="${k}" aria-pressed="${f===k}">${t}</button>`).join("")}</div>
+  <div class="flash-stat"><div class="bar amber"><i style="width:${cards.length?Math.round(known/cards.length*100):0}%"></i></div>
+    <span class="label">${known} / ${cards.length} learned</span></div>
+  <button type="button" class="big amber" id="study"><span class="t">Study</span><span class="s">Tap a card to see what it means</span></button>
+  ${(w.tests||[]).length ? `<button type="button" class="big amber-ghost" id="test"><span class="t">Test me</span><span class="s">A short text with gaps · 🪙 for each right answer</span></button>` : ""}`;
+  bindBack(at({name:"week"}));
+  $app.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>go(at({name:"flash", f:b.dataset.f})));
+  document.getElementById("study").onclick=()=>startStudy(w,f);
+  const t = document.getElementById("test"); if(t) t.onclick=()=>startTest(w);
+}
+function startStudy(w,f){
+  const cs = cardsOf(w,f);
+  const order = [...shuffle(cs.filter(c=>state.cards[c.id]!==2)), ...shuffle(cs.filter(c=>state.cards[c.id]===2))];
+  go(at({name:"study", f, queue:order, total:order.length, done:0, flipped:false}));
+}
+function study(){
+  const v = view, w = week();
+  if(!v.queue.length){
+    const l = learned(w);
+    $app.innerHTML = `
+    ${header()}
+    <div class="result">
+      <span class="label">Flashcards</span>
+      <div class="num amber-num">${l[0]} / ${l[1]}</div>
+      <p>cards learned in this class.</p>
+      <div class="actions" style="justify-content:flex-start">
+        ${(w.tests||[]).length?`<button type="button" class="btn amber-btn" id="test">Test me</button>`:""}
+        <button type="button" class="btn ghost" id="again">Study again</button>
+      </div>
+    </div>`;
+    bindBack(at({name:"flash", f:v.f}));
+    const t = document.getElementById("test"); if(t) t.onclick=()=>startTest(w);
+    document.getElementById("again").onclick=()=>startStudy(w, v.f);
+    return;
+  }
+  const c = v.queue[0];
+  $app.innerHTML = `
+  <div class="top"><button type="button" class="back" id="back">← Stop</button><span class="label">${v.done} / ${v.total}</span></div>
+  <div class="bar amber"><i style="width:${Math.round(v.done/v.total*100)}%"></i></div>
+  <div class="fcard" id="card" role="button" tabindex="0" aria-label="Turn the card">
+    <div class="fc-inner">
+      <div class="fc-face fc-front"><span class="label">${KIND[c.k]}</span><div class="fc-term">${esc(c.e.term)}</div><span class="fc-tip">Tap to turn</span></div>
+      <div class="fc-face fc-back"><div class="fc-term small">${esc(c.e.term)}</div><div class="fc-m">${esc(c.e.m)}</div><div class="fc-ex">${exHTML(c.e.ex)}</div></div>
+    </div>
+  </div>
+  <div class="rate hide" id="rate">
+    <button type="button" class="rate-btn again" data-r="0">Again</button>
+    <button type="button" class="rate-btn almost" data-r="1">Almost</button>
+    <button type="button" class="rate-btn know" data-r="2">I know it</button>
+  </div>`;
+  bindBack(at({name:"flash", f:v.f}));
+  const card = document.getElementById("card"), rate = document.getElementById("rate");
+  const turn = () => { card.classList.toggle("flipped"); rate.classList.remove("hide"); };
+  card.onclick = turn;
+  card.onkeydown = e => { if(e.key==="Enter"||e.key===" "){ e.preventDefault(); turn(); } };
+  rate.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{
+    const r = +b.dataset.r; state.cards[c.id] = r; save();
+    v.queue.shift();
+    if(r===0) v.queue.splice(Math.min(3, v.queue.length), 0, c);
+    else if(r===1) v.queue.push(c);
+    else v.done++;
+    study();
+  });
+}
+function startTest(w){
+  const ts = w.tests || []; if(!ts.length) return;
+  let i = Math.floor(Math.random()*ts.length);
+  if(ts.length>1 && i===state.lastTest[w.date]) i = (i+1) % ts.length;
+  state.lastTest[w.date] = i; save();
+  const t = ts[i];
+  go(at({name:"ftest", t, round:0, earned:0, first:0,
+    gaps: t.gaps.map(g=>({g, opts:shuffle(g.o.map((o,ix)=>({t:o, ok:ix===0}))), sel:null, status:null}))}));
+}
+function ftest(){
+  const v = view, w = week(), t = v.t;
+  const finished = v.round===2 || (v.round===1 && v.gaps.every(x=>x.status==="ok"));
+  const body = esc(t.body).replace(/\[(\d)\]/g, (m,n)=>{
+    const x = v.gaps[n-1], st = x.status ? " "+x.status : "";
+    const word = x.sel===null ? "" : x.opts[x.sel].t;
+    return `<span class="pgap${st}"><span class="num">${n}</span>${word?esc(word):"&nbsp;"}</span>`;
+  });
+  const lines = v.gaps.map((x,ix)=>{
+    const ent = w[x.g.k].entries.find(e=>e.term===x.g.t);
+    const chips = x.opts.map((o,oi)=>{
+      let cls = "chip";
+      if(x.status && x.sel===oi) cls += x.status==="ok" ? " ok" : " bad";
+      if(finished && o.ok) cls = "chip ok";
+      const lock = x.status==="ok" || finished;
+      return `<button type="button" class="${cls}" data-g="${ix}" data-o="${oi}" aria-pressed="${x.sel===oi}" ${lock?"disabled":""}>${esc(o.t)}</button>`;
+    }).join("");
+    const exp = finished && ent ? `<p class="explain"><b>${esc(ent.term)}</b> = ${esc(ent.m)}.</p>` : "";
+    return `<div class="gapline"><span class="gn">${ix+1}</span><div><div class="chips">${chips}</div>${exp}</div></div>`;
+  }).join("");
+  const n = v.gaps.length, okNow = v.gaps.filter(x=>x.status==="ok").length;
+  let fb = "";
+  if(v.round===1 && !finished) fb = `<div class="fb hint"><span class="k">${okNow} of ${n} correct</span>Change the gaps in red. Read the words before and after each gap.</div>`;
+  if(finished) fb = `<div class="fb ${v.first>=n-1?"ok":"bad"}"><span class="k">First try: ${v.first} of ${n}</span>${v.first<n?"The ones you missed are back in your flashcards as \"Again\".":"All correct!"}</div>`;
+  const filled = v.gaps.every(x=>x.sel!==null);
+  $app.innerHTML = `
+  <div class="top"><button type="button" class="back" id="back">← Back</button>${coinBadge(v.tick)}</div>
+  <div class="task">Choose the correct option for each gap.</div>
+  <div class="passage"><h3>${esc(t.title)}</h3>${body}</div>
+  <div aria-live="polite">${fb}</div>
+  ${lines}
+  ${finished && v.earned ? `<p class="earned">+${v.earned} 🪙</p>` : ""}
+  <div class="actions">
+    ${finished ? `<button type="button" class="btn ghost" id="cards">Flashcards</button><button type="button" class="btn amber-btn" id="another">Another text</button>`
+               : `<button type="button" class="btn amber-btn" id="check" ${filled?"":"disabled"}>${v.round===0?"Check":"Check again"}</button>`}
+  </div>`;
+  v.tick = false;
+  bindBack(at({name:"flash", f:"all"}));
+  if(finished){
+    document.getElementById("cards").onclick=()=>go(at({name:"flash", f:"all"}));
+    document.getElementById("another").onclick=()=>startTest(w);
+    return;
+  }
+  $app.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>{
+    const x = v.gaps[+b.dataset.g]; x.sel = +b.dataset.o; x.status = null; ftest();
+  });
+  document.getElementById("check").onclick=()=>{
+    v.gaps.forEach(x=>{
+      x.status = x.opts[x.sel].ok ? "ok" : "bad";
+      if(x.status==="bad") state.cards[cardId(w, x.g.k, x.g.t)] = 0;
+    });
+    if(v.round===0){
+      v.first = v.gaps.filter(x=>x.status==="ok").length;
+      v.earned = v.first; state.coins += v.first; if(v.first) v.tick = true;
+    }
+    save(); v.round++; ftest();
+  };
 }
 
 /* ── drill session ── */
