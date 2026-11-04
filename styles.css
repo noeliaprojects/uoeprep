@@ -210,7 +210,7 @@ h1,h2,h3{font-family:var(--f-display);line-height:1.15;text-wrap:balance;margin:
 .explain-body .exs.no{color:var(--bad);text-decoration:line-through}
 .explain-body s{color:var(--pencil)}
 .explain-body .scale{font-family:var(--f-mono);font-size:14px;color:var(--pencil)}
-.pairs{display:grid;grid-template-columns:minmax(84px,auto) 1fr;margin:0;border-top:1px solid var(--rule)}
+.pairs{display:grid;grid-template-columns:minmax(80px,38%) 1fr;margin:0;border-top:1px solid var(--rule)}
 .pairs dt,.pairs dd{margin:0;padding:8px 0;border-bottom:1px solid var(--rule)}
 .pairs dt{font-weight:700;padding-right:12px}
 .pairs dd i{display:block;color:var(--pencil)}

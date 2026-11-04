@@ -1,3 +1,393 @@
+const CLASS_2026_11_04 = {
+  date: "2026-11-04",
+  grammar: [
+    { id:"rel", title:"Relative clauses",
+      explain:`
+<section><h3>Defining</h3>
+<p>Says WHICH person or thing.</p>
+<p class="exs">The girl <b>who sits next to me</b> is Italian.</p>
+<ul><li>No commas.</li><li>You can use <b>that</b>.</li><li>Object? You can drop the pronoun:<br><i>The film (that) we saw was great.</i></li></ul></section>
+<section><h3>Non-defining</h3>
+<p>Extra information.</p>
+<p class="exs">My sister, <b>who lives in Paris</b>, is a nurse.</p>
+<ul><li>Always between commas.</li><li>Never <b>that</b>.</li><li>Never drop the pronoun.</li></ul></section>
+<section><h3>Which pronoun?</h3>
+<dl class="pairs">
+<dt>who</dt><dd>people<i>the man who called</i></dd>
+<dt>which</dt><dd>things, animals<i>the bike which I bought</i></dd>
+<dt>that</dt><dd>people or things · defining only<i>the book that you lent me</i></dd>
+<dt>whose</dt><dd>possession<i>the girl whose phone was stolen</i></dd>
+<dt>where</dt><dd>places<i>the town where I grew up</i></dd>
+<dt>when</dt><dd>times<i>the day when we met</i></dd>
+<dt>whom</dt><dd>people after a preposition<i>the people to whom I spoke</i></dd>
+</dl></section>
+<section><h3>which = the whole idea</h3>
+<p>It can refer to everything before it.</p>
+<p class="exs">He failed the exam, <b>which</b> surprised everyone.</p>
+<p>Always after a comma.</p></section>
+<section><h3>With prepositions</h3>
+<p class="exs">the house (which) I live <b>in</b> → informal</p>
+<p class="exs">the house <b>in which</b> I live → formal</p>
+<p class="exs">30 students, <b>most of whom</b> were Italian</p></section>`,
+      items:[
+        {"type":"mc","q":"The woman ___ helped me was really kind.","o":["who","which","whose","where"],"h":"A person.","e":"<b>who</b> for people."},
+        {"type":"mc","q":"This is the restaurant ___ we had our first date.","o":["where","which","who","whose"],"h":"A place + full clause.","e":"<b>where</b>."},
+        {"type":"mc","q":"I have a friend ___ father is a famous chef.","o":["whose","who","who's","which"],"h":"The father belongs to the friend.","e":"<b>whose</b> father."},
+        {"type":"mc","q":"My bike, ___ I bought second-hand, is very fast.","o":["which","that","what","who"],"h":"Commas + thing.","e":"Non-defining → <b>which</b>."},
+        {"type":"mc","q":"He forgot to call his mum, ___ upset her a lot.","o":["which","that","what","it"],"h":"The relative refers to the whole first idea.","e":"Whole-clause <b>which</b>."},
+        {"type":"mc","q":"The bus broke down, ___ meant we arrived two hours late.","o":["which","that","what","so"],"h":"Comma + refers to the whole event.","e":"<b>which</b> meant…"},
+        {"type":"mc","q":"She has written four novels, two of ___ have won prizes.","o":["which","them","that","whom"],"h":"Preposition + ? for things.","e":"two of <b>which</b>."},
+        {"type":"mc","q":"I'll never forget the day ___ I passed my driving test.","o":["when","which","where","whose"],"h":"Time.","e":"the day <b>when</b>."},
+        {"type":"mc","q":"The people ___ we spoke to were very helpful.","o":["who","whose","which","what"],"h":"People, defining clause.","e":"<b>who</b> (also: that, whom)."},
+        {"type":"mc","q":"The library has thousands of books, most of ___ are in English.","o":["which","whom","them","that"],"h":"most of + ? for things.","e":"most of <b>which</b>."},
+        {"type":"mc","q":"The man ___ lives next door is a firefighter.","o":["who","which","whose","where"],"h":"A person, no commas.","e":"<b>who / that</b>."},
+        {"type":"mc","q":"That's the shop ___ I bought my trainers.","o":["where","which","who","whose"],"h":"A place.","e":"<b>where</b>."},
+        {"type":"mc","q":"I met a girl ___ brother plays for Barcelona.","o":["whose","who","who's","which"],"h":"Possession.","e":"<b>whose</b>."},
+        {"type":"mc","q":"Our flight was cancelled, ___ was really annoying.","o":["which","that","what","who"],"h":"Refers to the whole previous idea.","e":"<b>which</b>."},
+        {"type":"mc","q":"Paris, ___ is the capital of France, is visited by millions.","o":["which","that","what","where"],"h":"Commas + thing.","e":"<b>which</b> (never 'that' with commas)."},
+        {"type":"mc","q":"The phone takes only an hour to charge, ___ is very convenient.","o":["which","that","what","it"],"h":"Comment on the whole idea.","e":"<b>which</b>."},
+        {"type":"mc","q":"There were 30 students, most of ___ came from Italy.","o":["whom","who","them","which"],"h":"Preposition + people.","e":"most of <b>whom</b>."},
+        {"type":"mc","q":"2020 was the year in ___ everything changed.","o":["which","that","when","what"],"h":"Preposition + ? (thing).","e":"in <b>which</b>."},
+        {"type":"mc","q":"She missed the last bus, ___ meant she had to walk home.","o":["which","that","what","so"],"h":"A relative that refers to the whole first part of the sentence.","e":"<b>which</b> = the fact that she missed the bus."},
+        {"type":"mc","q":"The concert was cancelled, ___ disappointed thousands of fans.","o":["which","that","what","it"],"h":"After a comma, referring to the whole event.","e":"<b>which</b>. <i>That</i> can't follow a comma."}
+      ]},
+    { id:"inv", title:"Inversion: Not only, Never, Hardly…",
+      explain:`
+<section><h3>What is it?</h3>
+<p>Some negative words can go at the START of a sentence.</p>
+<p>Then the word order changes, like in a question.</p>
+<p class="exs">I have <b>never</b> seen this. → <b>Never have I</b> seen this.</p></section>
+<section><h3>Auxiliary + subject</h3>
+<dl class="pairs">
+<dt>be</dt><dd><i>Not only <b>is it</b> cheap, it's also fast.</i></dd>
+<dt>have</dt><dd><i>Never <b>have I</b> felt so tired.</i></dd>
+<dt>modal</dt><dd><i>Under no circumstances <b>should you</b> open it.</i></dd>
+<dt>no auxiliary?</dt><dd>use do / does / did<i>Not only <b>does she</b> sing, she also dances.</i></dd>
+</dl></section>
+<section><h3>Common starters</h3>
+<dl class="pairs">
+<dt>Not only … but also</dt><dd><i>Not only <b>did</b> she win, but she also broke the record.</i></dd>
+<dt>Never / Rarely / Seldom</dt><dd><i>Rarely <b>do</b> we eat out.</i></dd>
+<dt>Hardly … when</dt><dd><i>Hardly <b>had</b> I sat down when the phone rang.</i></dd>
+<dt>No sooner … than</dt><dd><i>No sooner <b>had</b> we left than it started to rain.</i></dd>
+<dt>Little</dt><dd><i>Little <b>did</b> he know the truth.</i></dd>
+<dt>Only then / Only when</dt><dd><i>Only then <b>did</b> I understand.</i></dd>
+<dt>Under no circumstances</dt><dd><i>…<b>should</b> you share your password.</i></dd>
+</dl></section>
+<section><h3>Careful</h3>
+<p>If the word is NOT at the start, there's no inversion.</p>
+<p class="exs">She <b>not only</b> sings, she also dances. ✓</p>
+<p class="exs no">Not only she sings, she also dances. ✗</p></section>`,
+      items:[
+        {"type":"mc","q":"Not only ___ she speak French, but she also speaks Arabic.","o":["does","is","has","do"],"h":"'speak' has no auxiliary. Which one do we add?","e":"Not only <b>does</b> she speak… (do/does/did when there's no auxiliary)."},
+        {"type":"mc","q":"Never ___ I seen such a beautiful beach.","o":["have","do","am","was"],"h":"'seen' is a past participle.","e":"Never <b>have</b> I seen… (present perfect)."},
+        {"type":"mc","q":"Rarely ___ we go to the cinema these days.","o":["do","are","have","did"],"h":"Present simple, 'these days'.","e":"Rarely <b>do</b> we go…"},
+        {"type":"mc","q":"Hardly had we arrived ___ it started to rain.","o":["when","than","then","that"],"h":"Hardly … ?","e":"Hardly … <b>when</b>."},
+        {"type":"mc","q":"No sooner had the film started ___ the lights went out.","o":["than","when","then","that"],"h":"No sooner … ?","e":"No sooner … <b>than</b>."},
+        {"type":"mc","q":"Little ___ he know that his life was about to change.","o":["did","does","had","was"],"h":"Past simple + 'know'.","e":"Little <b>did</b> he know…"},
+        {"type":"mc","q":"Under no circumstances ___ leave the building during the exam.","o":["should you","you should","do","you"],"h":"Inversion: auxiliary first, then subject.","e":"Under no circumstances <b>should you</b> leave…"},
+        {"type":"mc","q":"Only then ___ I realise how lucky I was.","o":["did","I did","had","was"],"h":"Past simple + 'realise'.","e":"Only then <b>did</b> I realise…"},
+        {"type":"mc","q":"Not only ___ the hotel expensive, but it was also dirty.","o":["was","did","had","were"],"h":"The verb is 'be', past, singular.","e":"Not only <b>was</b> the hotel expensive…"},
+        {"type":"mc","q":"Seldom ___ you find a restaurant this good.","o":["do","are","is","does"],"h":"Present simple + 'you'.","e":"Seldom <b>do</b> you find…"},
+        {"type":"mc","q":"Not only did he forget my birthday, ___ he also forgot our anniversary.","o":["but","and","so","or"],"h":"Not only … ___ also.","e":"Not only … <b>but</b> also."},
+        {"type":"mc","q":"Never before ___ so many people come to the festival.","o":["have","has","are","is"],"h":"Present perfect, plural subject.","e":"Never before <b>have</b> so many people come…"},
+        {"type":"mc","q":"___ had I closed my eyes when the baby started crying.","o":["Hardly","No sooner","Only","Never"],"h":"Look at 'when' later in the sentence.","e":"<b>Hardly</b> … when. (No sooner goes with than.)"},
+        {"type":"mc","q":"Which sentence is correct?","o":["Not only does music relax you, it also helps you focus.","Not only music relaxes you, it also helps you focus.","Not only music does relax you, it also helps you focus.","Not only relaxes music you, it also helps you focus."],"h":"After 'Not only' at the start: auxiliary + subject + verb.","e":"Not only <b>does music relax</b> you…"},
+        {"type":"mc","q":"It ___ only saves money, but it also saves time.","o":["not","does","is","so"],"h":"'Not only' in the middle of the sentence.","e":"It <b>not only</b> saves money… (no inversion here)."},
+        {"type":"mc","q":"Only when you have finished ___ go out.","o":["can you","you can","are you","you are"],"h":"Only when … → inversion in the main part.","e":"Only when you have finished <b>can you</b> go out."}
+      ]},
+    { id:"comp", title:"Comparatives and superlatives",
+      explain:`
+<section><h3>Short adjectives</h3>
+<dl class="pairs">
+<dt>-er / -est</dt><dd><i>cheap → cheap<b>er</b> → the cheap<b>est</b></i></dd>
+<dt>-y → -ier / -iest</dt><dd><i>easy → eas<b>ier</b> → the eas<b>iest</b></i></dd>
+</dl></section>
+<section><h3>Long adjectives</h3>
+<dl class="pairs">
+<dt>more / most</dt><dd><i><b>more</b> relaxed · the <b>most</b> interesting</i></dd>
+<dt>less / least</dt><dd><i><b>less</b> expensive · the <b>least</b> popular</i></dd>
+</dl>
+<p>With a noun: a + more + adjective + noun.</p>
+<p class="exs">a <b>more</b> relaxed lifestyle</p></section>
+<section><h3>Irregular</h3>
+<dl class="pairs">
+<dt>good</dt><dd>better · the best</dd>
+<dt>bad</dt><dd>worse · the worst</dd>
+<dt>far</dt><dd>further · the furthest</dd>
+</dl></section>
+<section><h3>Comparing</h3>
+<dl class="pairs">
+<dt>than</dt><dd><i>older <b>than</b> me</i></dd>
+<dt>as … as</dt><dd><i>not <b>as</b> tall <b>as</b> you</i></dd>
+<dt>much / far / even</dt><dd>+ comparative<i><b>much</b> easier · <b>even</b> worse</i></dd>
+<dt>the …, the …</dt><dd><i><b>The more</b> you read, <b>the better</b> you write.</i></dd>
+</dl></section>
+<section><h3>the first / last / only + to</h3>
+<p class="exs">She was <b>the first to</b> arrive.</p>
+<p class="exs">He was <b>the only</b> one <b>to</b> pass.</p></section>`,
+      items:[
+        {"type":"mc","q":"This exercise is ___ than the last one.","o":["easier","more easy","easiest","the easiest"],"h":"Short adjective ending in -y + than.","e":"easy → <b>easier</b> than."},
+        {"type":"mc","q":"It's the ___ film I've ever seen.","o":["worst","worse","baddest","most bad"],"h":"Superlative of 'bad'.","e":"bad → worse → <b>the worst</b>."},
+        {"type":"mc","q":"Living in a village is ___ stressful than living in a city.","o":["less","least","fewer","little"],"h":"Comparative with 'than', the opposite of 'more'.","e":"<b>less</b> + adjective + than."},
+        {"type":"mc","q":"She's ___ hard-working student in the class.","o":["the most","more","the more","most"],"h":"Superlative of a long adjective.","e":"<b>the most</b> hard-working."},
+        {"type":"mc","q":"My new laptop is ___ faster than my old one.","o":["much","very","more","most"],"h":"Which word goes before a comparative?","e":"<b>much</b> faster. Not <i>very</i>."},
+        {"type":"mc","q":"He isn't as tall ___ his brother.","o":["as","than","like","so"],"h":"as … ?","e":"as tall <b>as</b>."},
+        {"type":"mc","q":"The ___ you practise, the better you get.","o":["more","most","much","many"],"h":"the …, the … ","e":"<b>The more</b> …, the better …"},
+        {"type":"mc","q":"Moving to the countryside gave them a ___ relaxed lifestyle.","o":["more","much","many","as"],"h":"a + comparative + adjective + noun.","e":"a <b>more</b> relaxed lifestyle."},
+        {"type":"mc","q":"Mount Everest is the ___ mountain in the world.","o":["highest","higher","most high","more high"],"h":"Superlative of a short adjective.","e":"<b>the highest</b>."},
+        {"type":"mc","q":"Ana was the first ___ finish the race.","o":["to","that","for","of"],"h":"the first + ? + verb.","e":"the first <b>to</b> finish."},
+        {"type":"mc","q":"Could you speak a bit ___, please? I can't hear you.","o":["louder","loud","loudest","most loud"],"h":"Comparative: more loud?","e":"<b>louder</b>."},
+        {"type":"mc","q":"The weather today is ___ worse than yesterday.","o":["even","very","more","most"],"h":"Which word makes a comparative stronger?","e":"<b>even</b> worse."},
+        {"type":"mc","q":"This is ___ expensive hotel in town.","o":["the most","the more","most","more"],"h":"Superlative of a long adjective.","e":"<b>the most</b> expensive."},
+        {"type":"mc","q":"Our house is ___ from the station than yours.","o":["further","furthest","far","farest"],"h":"Comparative of 'far'.","e":"far → <b>further</b>."},
+        {"type":"mc","q":"The older he gets, ___ he becomes.","o":["the wiser","wiser","the wisest","more wise"],"h":"the …, the …","e":"The older …, <b>the wiser</b> …"},
+        {"type":"mc","q":"She was the only person ___ remember my name.","o":["to","for","of","at"],"h":"the only + ? + verb.","e":"the only person <b>to</b> remember."}
+      ]},
+    { id:"ing", title:"-ing forms",
+      explain:`
+<section><h3>-ing as a noun</h3>
+<p>The -ing form can be the subject of a sentence.</p>
+<p class="exs"><b>Reading</b> before bed helps you relax.</p>
+<p class="exs"><b>Swimming</b> is good for your back.</p></section>
+<section><h3>After prepositions</h3>
+<p>After a preposition → always -ing.</p>
+<p class="exs">by <b>reading</b> · before <b>leaving</b> · without <b>saying</b> goodbye</p>
+<p class="exs">interested in <b>learning</b> · good at <b>drawing</b></p></section>
+<section><h3>After some verbs</h3>
+<dl class="pairs">
+<dt>+ -ing</dt><dd>enjoy, avoid, finish, mind, suggest, keep, consider, risk</dd>
+<dt>+ to</dt><dd>want, decide, hope, plan, agree, refuse, promise, manage</dd>
+</dl>
+<p class="exs">I enjoy <b>cooking</b>. · I decided <b>to cook</b> dinner.</p></section>
+<section><h3>-ing for a result</h3>
+<p>After a comma, -ing can show the result of the first part.</p>
+<p class="exs">The bus broke down, <b>leaving</b> us in the middle of nowhere.</p></section>
+<section><h3>make it + adjective + to</h3>
+<p class="exs">The noise <b>makes it</b> hard <b>to</b> sleep.</p></section>`,
+      items:[
+        {"type":"mc","q":"___ in the sea is my favourite thing about summer.","o":["Swimming","Swim","To swimming","Swam"],"h":"The subject of the sentence is an activity.","e":"<b>Swimming</b> is… (-ing as a noun)."},
+        {"type":"mc","q":"You can improve your English by ___ films in English.","o":["watching","watch","to watch","watched"],"h":"After a preposition (by).","e":"by <b>watching</b>."},
+        {"type":"mc","q":"She left without ___ goodbye.","o":["saying","say","to say","said"],"h":"After a preposition (without).","e":"without <b>saying</b>."},
+        {"type":"mc","q":"I'm really interested in ___ Japanese.","o":["learning","learn","to learn","learnt"],"h":"interested in + ?","e":"interested in <b>learning</b>."},
+        {"type":"mc","q":"We enjoy ___ to new places.","o":["travelling","to travel","travel","travelled"],"h":"enjoy + ?","e":"enjoy + <b>-ing</b>."},
+        {"type":"mc","q":"He decided ___ his job and travel the world.","o":["to leave","leaving","leave","left"],"h":"decide + ?","e":"decide + <b>to</b>."},
+        {"type":"mc","q":"The factory closed, ___ hundreds of people without work.","o":["leaving","left","leaves","to leave"],"h":"After a comma, a result of the first part.","e":"…, <b>leaving</b> hundreds of people… (result)."},
+        {"type":"mc","q":"Do you mind ___ the window?","o":["opening","to open","open","opened"],"h":"mind + ?","e":"mind + <b>-ing</b>."},
+        {"type":"mc","q":"The loud music made ___ impossible to concentrate.","o":["it","that","this","there"],"h":"make ___ + adjective + to.","e":"made <b>it</b> impossible to…"},
+        {"type":"mc","q":"Would you consider ___ abroad?","o":["working","to work","work","worked"],"h":"consider + ?","e":"consider + <b>-ing</b>."},
+        {"type":"mc","q":"Before ___ the house, check that the windows are closed.","o":["leaving","leave","to leave","left"],"h":"After a preposition (before).","e":"before <b>leaving</b>."},
+        {"type":"mc","q":"She managed ___ the exam even though she was ill.","o":["to pass","passing","pass","passed"],"h":"manage + ?","e":"manage + <b>to</b>."},
+        {"type":"mc","q":"___ too much sugar is bad for your teeth.","o":["Eating","Eat","Eaten","To eating"],"h":"The subject of the sentence is an activity.","e":"<b>Eating</b> too much sugar is…"},
+        {"type":"mc","q":"He's very good at ___ people laugh.","o":["making","make","to make","made"],"h":"good at + ?","e":"good at <b>making</b>."},
+        {"type":"mc","q":"It snowed all night, ___ the roads dangerous.","o":["making","made","makes","to make"],"h":"After a comma, a result of the first part.","e":"…, <b>making</b> the roads dangerous."},
+        {"type":"mc","q":"They suggested ___ a taxi to the airport.","o":["taking","to take","take","took"],"h":"suggest + ?","e":"suggest + <b>-ing</b>."}
+      ]},
+    { id:"link2", title:"Linkers: contrast and condition",
+      explain:`
+<section><h3>Contrast + clause</h3>
+<p>although · though · even though · while · whereas</p>
+<p class="exs"><b>Although</b> it was late, we kept working.</p>
+<p class="exs"><b>While</b> the job is well paid, it's very stressful.</p>
+<p><b>while / whereas</b> can also compare two things:</p>
+<p class="exs">I like the sea, <b>whereas</b> my sister prefers the mountains.</p></section>
+<section><h3>Contrast + noun / -ing</h3>
+<p>despite · in spite of</p>
+<p class="exs"><b>Despite</b> the rain, we went out.</p>
+<p class="exs"><b>In spite of</b> feeling tired, she finished the race.</p></section>
+<section><h3>whether … or</h3>
+<p>Two possibilities. It doesn't matter which one.</p>
+<p class="exs"><b>Whether</b> you take the bus <b>or</b> the train, it takes an hour.</p></section>
+<section><h3>Condition</h3>
+<dl class="pairs">
+<dt>if</dt><dd><i><b>If</b> it rains, we'll stay in.</i></dd>
+<dt>unless</dt><dd>= if not<i><b>Unless</b> you hurry, you'll be late.</i></dd>
+<dt>as long as / provided</dt><dd>= only if<i>You can go <b>as long as</b> you're back by 10.</i></dd>
+<dt>without</dt><dd>+ noun / -ing<i><b>Without</b> your help, I couldn't do it.</i></dd>
+<dt>otherwise</dt><dd>= if not<i>Hurry up, <b>otherwise</b> we'll miss the train.</i></dd>
+</dl></section>
+<section><h3>Adding information</h3>
+<p>Moreover, · Furthermore, · In addition, · What's more,</p>
+<p>New sentence + comma.</p></section>`,
+      items:[
+        {"type":"mc","q":"___ it was raining, we went for a walk.","o":["Although","Despite","However","Unless"],"h":"A clause follows (it was raining).","e":"<b>Although</b> + clause."},
+        {"type":"mc","q":"___ the cold weather, the children played outside.","o":["Despite","Although","Even though","Unless"],"h":"A noun follows (the cold weather).","e":"<b>Despite</b> + noun."},
+        {"type":"mc","q":"My brother loves football, ___ I prefer tennis.","o":["whereas","despite","unless","otherwise"],"h":"You're comparing two people.","e":"<b>whereas</b> compares two things."},
+        {"type":"mc","q":"___ you like it or not, you have to do your homework.","o":["Whether","If","Unless","Although"],"h":"Look at 'or not'.","e":"<b>Whether</b> … or not."},
+        {"type":"mc","q":"You won't pass ___ you study harder.","o":["unless","if","whether","despite"],"h":"= if you don't study harder.","e":"<b>unless</b> = if not."},
+        {"type":"mc","q":"___ a map, we would have got lost.","o":["Without","Unless","Despite","Although"],"h":"A noun follows, and it's a condition.","e":"<b>Without</b> + noun."},
+        {"type":"mc","q":"You can borrow my car as long ___ you drive carefully.","o":["as","so","that","like"],"h":"as long ___ = only if.","e":"as long <b>as</b>."},
+        {"type":"mc","q":"Take an umbrella, ___ you'll get wet.","o":["otherwise","unless","whereas","despite"],"h":"= if you don't.","e":"<b>otherwise</b> = if not."},
+        {"type":"mc","q":"___ the hotel was cheap, it was very comfortable.","o":["Even though","Despite","In spite of","However"],"h":"A clause follows.","e":"<b>Even though</b> + clause."},
+        {"type":"mc","q":"The app is free. ___, it has no adverts.","o":["Moreover","Although","Whereas","Unless"],"h":"A new sentence that adds a positive point.","e":"<b>Moreover,</b> = and also."},
+        {"type":"mc","q":"We'll play tennis tomorrow ___ it rains. If it rains, we'll go to the cinema.","o":["unless","if","whether","provided"],"h":"= if it doesn't rain.","e":"<b>unless</b> = if not."},
+        {"type":"mc","q":"___ he's only 12, he plays the piano like a professional.","o":["Although","Despite","Whether","Unless"],"h":"A clause follows, contrast.","e":"<b>Although</b> + clause."},
+        {"type":"mc","q":"___ you go by car or by train, the journey takes three hours.","o":["Whether","Either","If","Although"],"h":"Two possibilities, it doesn't matter which.","e":"<b>Whether</b> … or."},
+        {"type":"mc","q":"In spite ___ the noise, I slept well.","o":["of","to","from","for"],"h":"In spite ___ + noun.","e":"In spite <b>of</b>."},
+        {"type":"mc","q":"___ studying hard, she didn't get the grade she wanted.","o":["Despite","Although","Even though","Unless"],"h":"-ing follows.","e":"<b>Despite</b> + -ing."},
+        {"type":"mc","q":"___ water, plants can't survive.","o":["Without","Unless","Despite","Otherwise"],"h":"A noun follows, and it's a condition.","e":"<b>Without</b> + noun."}
+      ]},
+    { id:"modal", title:"Modals: obligation and advice",
+      explain:`
+<section><h3>Obligation</h3>
+<dl class="pairs">
+<dt>must</dt><dd>the speaker thinks it's necessary<i>I <b>must</b> call my mum.</i></dd>
+<dt>have to</dt><dd>a rule or a situation<i>We <b>have to</b> wear a uniform.</i></dd>
+<dt>need to</dt><dd>it's necessary<i>You <b>need to</b> book in advance.</i></dd>
+</dl></section>
+<section><h3>Advice</h3>
+<dl class="pairs">
+<dt>should / ought to</dt><dd><i>You <b>should</b> see a doctor.</i></dd>
+<dt>had better</dt><dd>strong advice<i>You'<b>d better</b> hurry.</i></dd>
+</dl></section>
+<section><h3>Negative: careful!</h3>
+<dl class="pairs">
+<dt>mustn't</dt><dd>it's not allowed<i>You <b>mustn't</b> smoke here.</i></dd>
+<dt>don't have to</dt><dd>it isn't necessary<i>You <b>don't have to</b> come.</i></dd>
+<dt>needn't</dt><dd>it isn't necessary<i>You <b>needn't</b> worry.</i></dd>
+</dl></section>
+<section><h3>Past</h3>
+<dl class="pairs">
+<dt>had to</dt><dd><i>I <b>had to</b> work late yesterday.</i></dd>
+<dt>didn't have to</dt><dd><i>We <b>didn't have to</b> pay.</i></dd>
+<dt>should have</dt><dd>+ past participle: criticism<i>You <b>should have</b> told me.</i></dd>
+</dl>
+<p><b>must</b> has no past form. Use <b>had to</b>.</p></section>`,
+      items:[
+        {"type":"mc","q":"You ___ smoke in the hospital. It's forbidden.","o":["mustn't","don't have to","needn't","don't need to"],"h":"It's not allowed.","e":"<b>mustn't</b> = it's not allowed."},
+        {"type":"mc","q":"You ___ bring food. Lunch is included.","o":["don't have to","mustn't","haven't to","aren't to"],"h":"It isn't necessary.","e":"<b>don't have to</b> = not necessary."},
+        {"type":"mc","q":"Yesterday I ___ get up at 5 a.m. to catch my flight.","o":["had to","must","have to","musted"],"h":"Past obligation.","e":"<b>had to</b> (must has no past)."},
+        {"type":"mc","q":"You look tired. You ___ go to bed earlier.","o":["should","must to","ought","have"],"h":"Advice.","e":"<b>should</b> + verb."},
+        {"type":"mc","q":"In my school, we ___ wear a uniform. It's the rule.","o":["have to","has to","must to","need"],"h":"A rule, with 'we'.","e":"we <b>have to</b>."},
+        {"type":"mc","q":"You ___ worry. Everything is under control.","o":["needn't","don't need","haven't to","mustn't to"],"h":"It isn't necessary.","e":"<b>needn't</b> + verb."},
+        {"type":"mc","q":"You ___ told me it was your birthday! I would have bought you a present.","o":["should have","should","must","had to"],"h":"Criticism about the past.","e":"<b>should have</b> + past participle."},
+        {"type":"mc","q":"We'd ___ leave now or we'll miss the bus.","o":["better","best","should","must"],"h":"Strong advice: We'd ___ …","e":"We'd <b>better</b> leave."},
+        {"type":"mc","q":"Do I ___ to book a table, or can we just go?","o":["need","must","should","ought"],"h":"Which one is followed by 'to'?","e":"<b>need to</b>."},
+        {"type":"mc","q":"Students ___ to switch off their phones during exams.","o":["have","must","should","need to"],"h":"Which one is followed by 'to'?","e":"<b>have to</b>."},
+        {"type":"mc","q":"She ___ to work at the weekend last month because they were very busy.","o":["had","must","has","have"],"h":"Past, + to.","e":"<b>had to</b>."},
+        {"type":"mc","q":"You ought ___ apologise to her.","o":["to","for","that","at"],"h":"ought + ?","e":"ought <b>to</b>."},
+        {"type":"mc","q":"Drivers ___ stop at a red light. It's the law.","o":["have to","don't have to","needn't","ought"],"h":"A rule.","e":"<b>have to</b>."},
+        {"type":"mc","q":"We ___ pay to visit the museum. It was free!","o":["didn't have to","mustn't","hadn't to","needn't to"],"h":"Past, not necessary.","e":"<b>didn't have to</b>."},
+        {"type":"mc","q":"Which sentence means 'It's not necessary'?","o":["You don't have to come.","You mustn't come.","You shouldn't come.","You can't come."],"h":"Careful with mustn't!","e":"<b>don't have to</b> = not necessary. <i>mustn't</i> = not allowed."},
+        {"type":"mc","q":"You'd ___ see a doctor about that cough.","o":["better","rather","best","should"],"h":"Strong advice: You'd ___ …","e":"You'd <b>better</b> see a doctor."}
+      ]}
+  ],
+  phrasal: {
+    entries:[
+      {"term":"dive into","key":"into","m":"start doing something with a lot of energy","ex":"She {dived into} her new project.","ex2":"As soon as he got home, he {dived into} the new novel.","alt":["up","off","over"]},
+      {"term":"turn to","key":"to","m":"go to someone or something for help","ex":"When she feels sad, she {turns to} music.","ex2":"Many people {turn to} their friends for advice.","alt":["into","up","over"]},
+      {"term":"drive up","key":"up","m":"make prices go higher","ex":"The new airport has {driven up} house prices.","ex2":"Tourism is {driving up} the cost of living.","alt":["out","off","over"]},
+      {"term":"price out","key":"out","m":"make something too expensive for someone","ex":"High rents are {pricing young people out} of the city.","ex2":"Many families have been {priced out} of the area.","alt":["off","up","away"]},
+      {"term":"take up","key":"up","m":"start a new hobby","ex":"I've {taken up} yoga.","ex2":"He {took up} the guitar at 40.","alt":["on","in","over"]},
+      {"term":"look up","key":"up","m":"find information in a book or online","ex":"If you don't know a word, {look it up}.","ex2":"I {looked up} the bus times online.","alt":["after","off","down"]},
+      {"term":"come up with","key":"up","m":"think of an idea","ex":"She {came up with} a brilliant plan.","ex2":"We need to {come up with} a name for the band.","alt":["over","across","in"]},
+      {"term":"put up with","key":"up","m":"accept something annoying","ex":"I can't {put up with} this noise any more.","ex2":"How do you {put up with} your noisy neighbours?","alt":["off","on","out"]},
+      {"term":"break down","key":"down","m":"stop working (a machine or car)","ex":"Our car {broke down} on the motorway.","ex2":"The washing machine has {broken down} again.","alt":["up","off","out"]},
+      {"term":"set up","key":"up","m":"start a business or organisation","ex":"She {set up} her own company at 25.","ex2":"They want to {set up} a reading club.","alt":["off","out","on"]},
+      {"term":"carry out","key":"out","m":"do a task, a study or an experiment","ex":"Scientists {carried out} a study on sleep.","ex2":"The police will {carry out} an investigation.","alt":["on","off","over"]},
+      {"term":"cut down on","key":"down","m":"do or use less of something","ex":"I'm trying to {cut down on} sugar.","ex2":"You should {cut down on} screen time.","alt":["up","off","over"]},
+      {"term":"find out","key":"out","m":"discover information","ex":"I {found out} the truth yesterday.","ex2":"Can you {find out} what time the film starts?","alt":["up","off","over"]},
+      {"term":"end up","key":"up","m":"finally be somewhere without planning it","ex":"We got lost and {ended up} in a tiny village.","ex2":"If you don't study, you'll {end up} failing.","alt":["out","off","over"]},
+      {"term":"figure out","key":"out","m":"understand or solve something","ex":"I can't {figure out} how this app works.","ex2":"She finally {figured out} the answer.","alt":["up","off","over"]},
+      {"term":"get on with","key":"on","m":"have a good relationship with someone","ex":"I {get on well with} my sister.","ex2":"Do you {get on with} your neighbours?","alt":["up","off","over"]}
+    ],
+    items:[
+      {"type":"mc","q":"When I'm stressed, I ___ music to relax.","o":["turn to","end up","find out","break down"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>turn to</b> = go to for help."},
+      {"type":"mc","q":"As soon as the book arrived, she ___ it.","o":["dived into","put up with","broke down","set up"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>dive into</b> = start with energy."},
+      {"type":"mc","q":"The new shopping centre has ___ local rents.","o":["driven up","figured out","come up with","ended up"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>drive up</b> prices = make them higher."},
+      {"type":"mc","q":"Young families are being ___ of the city centre.","o":["priced out","figured out","found out","set up"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>price out</b> = make too expensive."},
+      {"type":"mc","q":"My dad has ___ running. He goes every morning.","o":["taken up","put up with","broken down","cut down on"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>take up</b> = start a hobby."},
+      {"type":"mc","q":"If you don't know a word, ___ in the dictionary.","o":["look it up","set it up","take it up","break it down"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>look up</b> = find information."},
+      {"type":"mc","q":"We need to ___ an idea for the school project.","o":["come up with","put up with","cut down on","turn to"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>come up with</b> = think of."},
+      {"type":"mc","q":"I can't ___ my brother's music any more. It's too loud!","o":["put up with","come up with","cut down on","dive into"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>put up with</b> = accept something annoying."},
+      {"type":"mc","q":"Our bus ___ on the way to the airport.","o":["broke down","set up","took up","found out"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>break down</b> = stop working."},
+      {"type":"mc","q":"My aunt ___ her own bakery last year.","o":["set up","broke down","found out","turned to"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>set up</b> = start a business."},
+      {"type":"mc","q":"The students ___ a survey about reading habits.","o":["carried out","priced out","broke down","put up with"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>carry out</b> = do a task or study."},
+      {"type":"mc","q":"I'm trying to ___ coffee. I drink too much.","o":["cut down on","come up with","put up with","dive into"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>cut down on</b> = use less."},
+      {"type":"mc","q":"How did you ___ about the surprise party?","o":["find out","take up","set up","end up"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>find out</b> = discover."},
+      {"type":"mc","q":"We took the wrong train and ___ in Valencia.","o":["ended up","found out","set up","turned to"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>end up</b> = finally be somewhere."},
+      {"type":"mc","q":"Can you help me ___ how to use this printer?","o":["figure out","put up with","end up","break down"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>figure out</b> = understand."},
+      {"type":"mc","q":"Do you ___ well with your classmates?","o":["get on","set up","take up","end up"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>get on (well) with</b> = have a good relationship."}
+    ]
+  },
+  colloc: {
+    entries:[
+      {"term":"take action","key":"action","m":"do something to solve a problem","ex":"We need to {take action} before it's too late.","ex2":"The police {took action} quickly.","alt":["act","activity","acting"]},
+      {"term":"have an impact on","key":"impact","m":"affect something strongly","ex":"Social media {has a big impact on} teenagers.","ex2":"The new law will {have an impact on} small shops.","alt":["affect","strike","hit"]},
+      {"term":"broaden your horizons","key":"horizons","m":"learn about new things and ideas","ex":"Travelling {broadens your horizons}.","ex2":"Learning a language can {broaden your horizons}.","alt":["limits","borders","edges"]},
+      {"term":"gain perspective","key":"perspective","m":"see a situation more clearly","ex":"A holiday can help you {gain perspective}.","ex2":"Talking to friends helped me {gain a new perspective}.","alt":["vision","sight","look"]},
+      {"term":"make a habit of","key":"habit","m":"start doing something regularly","ex":"I've {made a habit of} walking to work.","ex2":"Don't {make a habit of} arriving late!","alt":["manner","use","way"]},
+      {"term":"make an effort","key":"effort","m":"try hard","ex":"Please {make an effort} to arrive on time.","ex2":"She {made a real effort} with her homework.","alt":["try","work","force"]},
+      {"term":"keep a promise","key":"promise","m":"do what you said you would do","ex":"It's important to {keep a promise}.","ex2":"She didn't {keep her promise}.","alt":["deal","offer","speech"]},
+      {"term":"save time","key":"time","m":"use less time","ex":"Online shopping {saves time}.","ex2":"We took a taxi to {save time}.","alt":["moment","clock","period"]},
+      {"term":"raise awareness","key":"awareness","m":"make people know about a problem","ex":"The campaign aims to {raise awareness} of plastic pollution.","ex2":"They organised a concert to {raise awareness} about mental health.","alt":["knowledge","notice","news"]},
+      {"term":"meet a deadline","key":"deadline","m":"finish something on time","ex":"We worked all night to {meet the deadline}.","ex2":"If you don't {meet the deadline}, you'll lose points.","alt":["date","limit","end"]},
+      {"term":"break a habit","key":"break","m":"stop doing something you always do","ex":"It's hard to {break a habit}.","ex2":"I want to {break the habit} of checking my phone.","alt":["cut","lose","split"]},
+      {"term":"solve a problem","key":"solve","m":"find an answer to a problem","ex":"Can you help me {solve this problem}?","ex2":"We need to {solve the problem} quickly.","alt":["answer","repair","respond"]},
+      {"term":"reach an agreement","key":"agreement","m":"agree after a discussion","ex":"After hours of talks, they {reached an agreement}.","ex2":"Both sides hope to {reach an agreement} soon.","alt":["agree","agreeing","accept"]},
+      {"term":"do your best","key":"best","m":"try as hard as you can","ex":"Don't worry, just {do your best}.","ex2":"I {did my best} in the exam.","alt":["better","most","good"]},
+      {"term":"boost the economy","key":"boost","m":"make the economy stronger","ex":"Tourism can {boost the economy}.","ex2":"The government wants to {boost the economy}.","alt":["rise","raise","increase"]},
+      {"term":"create jobs","key":"jobs","m":"give people new work","ex":"The new factory will {create 200 jobs}.","ex2":"Tourism {creates jobs} for local people.","alt":["works","employs","labours"]}
+    ],
+    items:[
+      {"type":"mc","q":"If we don't ___ soon, the river will be completely polluted.","o":["take action","keep a promise","do our best","save time"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>take action</b> = do something to solve a problem."},
+      {"type":"mc","q":"Mobile phones have ___ the way we communicate.","o":["had a huge impact on","made an effort","met a deadline","saved time"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>have an impact on</b> = affect strongly."},
+      {"type":"mc","q":"Living abroad really ___. You learn so much.","o":["broadens your horizons","meets a deadline","solves a problem","keeps a promise"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>broaden your horizons</b>."},
+      {"type":"mc","q":"Taking a break from work helped him ___.","o":["gain perspective","reach an agreement","raise awareness","create jobs"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>gain perspective</b> = see things more clearly."},
+      {"type":"mc","q":"She has ___ reading for 20 minutes every night.","o":["made a habit of","kept a promise","met a deadline","broken a habit"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>make a habit of</b> + -ing."},
+      {"type":"mc","q":"If you want to improve, you have to ___.","o":["make an effort","create jobs","boost the economy","reach an agreement"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>make an effort</b> = try hard."},
+      {"type":"mc","q":"You said you would help me. Please ___.","o":["keep your promise","save time","raise awareness","meet the deadline"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>keep a promise</b>."},
+      {"type":"mc","q":"Let's take the motorway to ___.","o":["save time","raise awareness","reach an agreement","broaden your horizons"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>save time</b>."},
+      {"type":"mc","q":"The charity runs a campaign to ___ of homelessness.","o":["raise awareness","make a habit","gain perspective","do your best"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>raise awareness</b> of."},
+      {"type":"mc","q":"I finished the essay at midnight, just in time to ___.","o":["meet the deadline","break a habit","keep a promise","boost the economy"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>meet a deadline</b>."},
+      {"type":"mc","q":"Biting your nails is a bad habit. It's difficult to ___.","o":["break the habit","meet the deadline","create jobs","reach an agreement"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>break a habit</b> = stop doing it."},
+      {"type":"mc","q":"The engineer worked all day to ___ with the heating.","o":["solve the problem","reach an agreement","raise awareness","keep a promise"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>solve a problem</b>."},
+      {"type":"mc","q":"After a long discussion, the two companies ___.","o":["reached an agreement","broke a habit","created jobs","boosted the economy"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>reach an agreement</b>."},
+      {"type":"mc","q":"Don't worry about the result. Just ___.","o":["do your best","save time","create jobs","meet a deadline"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>do your best</b>."},
+      {"type":"mc","q":"The new stadium will ___ for 300 local people.","o":["create jobs","boost the economy","raise awareness","solve a problem"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>create jobs</b> for."},
+      {"type":"mc","q":"Lower taxes can help to ___.","o":["boost the economy","keep a promise","meet a deadline","break a habit"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>boost the economy</b>."}
+    ]
+  },
+  fixed: {
+    entries:[
+      {"term":"cope with","key":"with","m":"deal successfully with a difficult situation","ex":"She {copes with} stress by doing yoga.","ex2":"How do you {cope with} so much homework?","alt":["to","for","at"]},
+      {"term":"lead to","key":"to","m":"cause","ex":"Too much screen time can {lead to} sleep problems.","ex2":"The mistake {led to} a serious accident.","alt":["in","at","for"]},
+      {"term":"demand for","key":"for","m":"how much people want something","ex":"There is a high {demand for} electric cars.","ex2":"The {demand for} tickets was huge.","alt":["of","on","to"]},
+      {"term":"rely on","key":"on","m":"need and trust someone or something","ex":"You can always {rely on} me.","ex2":"Many people {rely on} their phones.","alt":["in","to","at"]},
+      {"term":"in common","key":"common","m":"shared interests or qualities","ex":"My sister and I have a lot {in common}.","ex2":"We don't have much {in common}.","alt":["same","similar","equal"]},
+      {"term":"on average","key":"on","m":"usually; the normal amount","ex":"People check their phones 90 times a day {on average}.","ex2":"The journey takes two hours {on average}.","alt":["in","at","by"]},
+      {"term":"at risk","key":"at","m":"in danger","ex":"These animals are {at risk} of disappearing.","ex2":"Children who don't sleep enough are {at risk}.","alt":["in","on","under"]},
+      {"term":"in addition to","key":"addition","m":"as well as","ex":"{In addition to} English, she speaks Italian.","ex2":"{In addition to} the price, you pay a tax.","alt":["add","adding","plus"]},
+      {"term":"according to","key":"According","m":"as said by","ex":"{According to} the news, it will snow.","ex2":"{According to} my teacher, the test is easy.","alt":["Regarding","Depending","Following"]},
+      {"term":"instead of","key":"instead","m":"in the place of","ex":"Let's walk {instead of} taking the bus.","ex2":"I had tea {instead of} coffee.","alt":["rather","except","besides"]},
+      {"term":"in favour of","key":"favour","m":"supporting an idea","ex":"Most students are {in favour of} longer holidays.","ex2":"I'm not {in favour of} the new rules.","alt":["support","agree","side"]},
+      {"term":"on time","key":"on","m":"at the correct time","ex":"The train arrived {on time}.","ex2":"Please hand in your homework {on time}.","alt":["at","by","with"]},
+      {"term":"at first","key":"at","m":"at the beginning","ex":"I didn't like the city {at first}.","ex2":"It was difficult {at first}, but it got easier.","alt":["in","on","by"]},
+      {"term":"for instance","key":"for","m":"for example","ex":"Some fruits, {for instance} oranges, have a lot of vitamin C.","ex2":"There are many ways to save money: cooking at home, {for instance}.","alt":["in","by","as"]},
+      {"term":"out of date","key":"out","m":"old; not modern or not valid","ex":"This map is {out of date}.","ex2":"Your passport is {out of date}.","alt":["off","over","past"]},
+      {"term":"by chance","key":"by","m":"without planning it","ex":"We met {by chance} at the station.","ex2":"I found the café {by chance}.","alt":["in","on","with"]}
+    ],
+    items:[
+      {"type":"mc","q":"She ___ stress by going for long walks.","o":["copes with","leads to","relies on","depends on"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>cope with</b> a difficult situation."},
+      {"type":"mc","q":"Eating too much sugar can ___ health problems.","o":["lead to","cope with","rely on","be in favour of"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>lead to</b> = cause."},
+      {"type":"mc","q":"There's a growing ___ online classes.","o":["demand for","instead of","according to","in favour of"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>demand for</b>."},
+      {"type":"mc","q":"My best friend and I have a lot ___.","o":["in common","on average","at risk","by chance"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>in common</b>."},
+      {"type":"mc","q":"___, teenagers sleep seven hours a night.","o":["On average","In common","At risk","Out of date"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>on average</b>."},
+      {"type":"mc","q":"Polar bears are ___ because the ice is melting.","o":["at risk","in common","on time","by chance"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>at risk</b> = in danger."},
+      {"type":"mc","q":"___ the main course, there's a dessert and coffee.","o":["In addition to","According to","In common","On average"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>in addition to</b> = as well as."},
+      {"type":"mc","q":"___ the weather forecast, it's going to be sunny.","o":["According to","In addition to","Instead of","In favour of"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>according to</b>."},
+      {"type":"mc","q":"Why don't we cycle ___ taking the car?","o":["instead of","according to","in addition to","out of date"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>instead of</b> + -ing."},
+      {"type":"mc","q":"Most parents are ___ the new school timetable.","o":["in favour of","instead of","according to","out of date"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>in favour of</b> = supporting."},
+      {"type":"mc","q":"The plane landed ___, at exactly 6 o'clock.","o":["on time","at first","by chance","at risk"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>on time</b>."},
+      {"type":"mc","q":"___ I found the work hard, but now I enjoy it.","o":["At first","On time","By chance","For instance"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>at first</b> = at the beginning."},
+      {"type":"mc","q":"Some sports, ___ tennis, can be played all year.","o":["for instance","at first","by chance","on average"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>for instance</b> = for example."},
+      {"type":"mc","q":"Don't use that guidebook. It's ___.","o":["out of date","on time","in common","by chance"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>out of date</b> = old."},
+      {"type":"mc","q":"We didn't plan it. We met ___ in a café.","o":["by chance","on time","at first","on average"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>by chance</b>."},
+      {"type":"mc","q":"You can always ___ me. I'll never let you down.","o":["rely on","cope with","lead to","demand for"],"h":"Read the whole sentence. Which expression makes sense here?","e":"<b>rely on</b>."}
+    ]
+  }
+};
+
 const CLASS_2026_10_28 = {
   date: "2026-10-28",
   grammar: [
@@ -400,7 +790,7 @@ const CLASS_2026_10_28 = {
 
 const EXAMS = [
   { id:"linguaskill", name:"Linguaskill", weeks:[ CLASS_2026_10_28 ] },
-  { id:"first",       name:"B2 First",       weeks:[] },
+  { id:"first",       name:"B2 First",       weeks:[ CLASS_2026_11_04 ] },
   { id:"advanced",    name:"C1 Advanced",    weeks:[] },
   { id:"proficiency", name:"C2 Proficiency", weeks:[] }
 ];
