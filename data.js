@@ -1,5 +1,5 @@
-const WEEK_2026_10_26 = {
-  monday: "2026-10-26",
+const CLASS_2026_10_28 = {
+  date: "2026-10-28",
   grammar: [
     { id:"rel", title:"Relative clauses",
       explain:`
@@ -399,7 +399,7 @@ const WEEK_2026_10_26 = {
 };
 
 const EXAMS = [
-  { id:"linguaskill", name:"Linguaskill", weeks:[ WEEK_2026_10_26 ] },
+  { id:"linguaskill", name:"Linguaskill", weeks:[ CLASS_2026_10_28 ] },
   { id:"first",       name:"B2 First",       weeks:[] },
   { id:"advanced",    name:"C1 Advanced",    weeks:[] },
   { id:"proficiency", name:"C2 Proficiency", weeks:[] }

@@ -14,9 +14,9 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":
 const shuffle = a => { a = a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; };
 const norm = s => String(s).toLowerCase().replace(/[’‘`]/g,"'").replace(/[.,!?;:"]/g,"").replace(/\s+/g," ").trim();
 const LETTERS = "ABCD";
-const weekName = w => "Week of " + new Date(w.monday+"T12:00:00").toLocaleDateString("en-GB",{day:"numeric",month:"long"});
+const weekName = w => new Date(w.date+"T12:00:00").toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"});
 const exam = () => EXAMS.find(x=>x.id===view.exam);
-const week = () => exam().weeks.find(w=>w.monday===view.week);
+const week = () => exam().weeks.find(w=>w.date===view.week);
 const VOCAB = {phrasal:"Phrasal verbs", colloc:"Collocations", fixed:"Fixed phrases"};
 
 /* phrasal verbs & collocations → drill questions */
@@ -79,9 +79,9 @@ function weeks(){
   const x = exam();
   $app.innerHTML = `
   ${header()}
-  <div class="unit-head"><span class="label">${esc(x.name)}</span><h2>Choose the week</h2></div>
+  <div class="unit-head"><span class="label">${esc(x.name)}</span><h2>Choose the class</h2></div>
   <div class="menu">${x.weeks.map(w=>`
-    <button type="button" class="menu-btn" data-week="${w.monday}"><span class="t">${esc(weekName(w))}</span><span class="arr" aria-hidden="true">→</span></button>`).join("")}</div>`;
+    <button type="button" class="menu-btn" data-week="${w.date}"><span class="t">${esc(weekName(w))}</span><span class="arr" aria-hidden="true">→</span></button>`).join("")}</div>`;
   bindBack({name:"exams"});
   $app.querySelectorAll("[data-week]").forEach(b=>b.onclick=()=>go({name:"week", exam:x.id, week:b.dataset.week}));
 }
