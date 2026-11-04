@@ -215,3 +215,31 @@ h1,h2,h3{font-family:var(--f-display);line-height:1.15;text-wrap:balance;margin:
 .pairs dt{font-weight:700;padding-right:12px}
 .pairs dd i{display:block;color:var(--pencil)}
 .pairs dd b{color:var(--biro)}
+
+/* coins and pets: kept small and quiet */
+.coin{font-family:var(--f-mono);font-size:13px;color:var(--pencil);font-variant-numeric:tabular-nums;white-space:nowrap}
+.coin.tick{animation:coin .6s ease-out}
+@keyframes coin{0%{color:var(--hint);transform:translateY(0)}35%{color:var(--hint);transform:translateY(-3px)}100%{color:var(--pencil);transform:none}}
+.topr{display:flex;align-items:center;gap:12px}
+.earned{font-family:var(--f-mono);font-size:14px;color:var(--pencil)}
+.pet-row{display:flex;align-items:center;gap:12px;width:100%;margin-top:28px;text-align:left;background:none;border:1.5px dashed var(--rule);border-radius:var(--r);padding:12px 16px}
+.pet-row:hover{border-color:var(--biro)}
+.pet-row .pe{font-size:26px;line-height:1}
+.pet-row .t{flex:1;min-width:0;font-size:16px}
+.pet-home{display:grid;justify-items:center;gap:6px;text-align:center;margin:4px 0 24px}
+.pet-big{font-size:96px;line-height:1.1}
+.pet-home h2{font-size:26px}
+.pet-home .write{width:100%;max-width:340px}
+.pet-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.pet-card{display:grid;justify-items:center;gap:2px;background:var(--sheet);border:1.5px solid var(--rule);border-radius:var(--r);padding:12px 6px;min-width:0}
+.pet-card:hover:not(:disabled){border-color:var(--biro)}
+.pet-card .pe{font-size:40px;line-height:1.15}
+.pet-card .t{font-size:14px;font-weight:700;overflow-wrap:anywhere}
+.pet-card .s{font-family:var(--f-mono);font-size:12px;color:var(--pencil)}
+.pet-card:disabled{cursor:default}
+.pet-card:disabled:not(.owned) .pe{filter:grayscale(1);opacity:.45}
+.pet-card.owned{background:var(--ok-soft);border-color:var(--ok)}
+.pet-card.confirm{border-color:var(--biro);background:var(--biro-soft)}
+.pet-card.confirm .s{color:var(--biro);font-weight:700}
+.pet-card.active{border-color:var(--biro);background:var(--biro-soft)}
+.petask{font-size:16px}

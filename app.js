@@ -5,7 +5,7 @@ const STORE = "uoe:v3";
 const MIXED_SIZE = 20;
 const VOCAB_SIZE = 24;
 
-let state = {best:{}};
+let state = {best:{}, coins:0, pets:{}, active:null};
 try{ const raw = localStorage.getItem(STORE); if(raw) state = Object.assign(state, JSON.parse(raw)); }catch(e){}
 function save(){ try{ localStorage.setItem(STORE, JSON.stringify(state)); }catch(e){} }
 
@@ -18,6 +18,22 @@ const weekName = w => new Date(w.date+"T12:00:00").toLocaleDateString("en-GB",{w
 const exam = () => EXAMS.find(x=>x.id===view.exam);
 const week = () => exam().weeks.find(w=>w.date===view.week);
 const VOCAB = {phrasal:"Phrasal verbs", colloc:"Collocations", fixed:"Fixed phrases"};
+
+/* ── coins & pets ── */
+const PET_SIZE = 10;
+const TIERS = ["Common","Special","Rare","Legendary"];
+const PETS = [
+  {id:"cat",e:"🐱",n:"Cat",t:0,p:20},{id:"dog",e:"🐶",n:"Dog",t:0,p:20},{id:"rabbit",e:"🐰",n:"Rabbit",t:0,p:20},
+  {id:"hamster",e:"🐹",n:"Hamster",t:0,p:20},{id:"turtle",e:"🐢",n:"Turtle",t:0,p:20},{id:"chick",e:"🐥",n:"Chick",t:0,p:20},
+  {id:"fox",e:"🦊",n:"Fox",t:1,p:60},{id:"panda",e:"🐼",n:"Panda",t:1,p:60},{id:"owl",e:"🦉",n:"Owl",t:1,p:60},
+  {id:"koala",e:"🐨",n:"Koala",t:1,p:60},{id:"otter",e:"🦦",n:"Otter",t:1,p:60},{id:"sloth",e:"🦥",n:"Sloth",t:1,p:60},
+  {id:"tiger",e:"🐯",n:"Tiger",t:2,p:150},{id:"octopus",e:"🐙",n:"Octopus",t:2,p:150},{id:"penguin",e:"🐧",n:"Penguin",t:2,p:150},
+  {id:"flamingo",e:"🦩",n:"Flamingo",t:2,p:150},{id:"hedgehog",e:"🦔",n:"Hedgehog",t:2,p:150},{id:"dolphin",e:"🐬",n:"Dolphin",t:2,p:150},
+  {id:"dragon",e:"🐉",n:"Dragon",t:3,p:400},{id:"unicorn",e:"🦄",n:"Unicorn",t:3,p:400},{id:"trex",e:"🦖",n:"T-Rex",t:3,p:400},{id:"whale",e:"🐋",n:"Blue whale",t:3,p:400}
+];
+const petById = id => PETS.find(x=>x.id===id);
+const activePet = () => state.active && state.pets[state.active]!==undefined ? {pet:petById(state.active), name:state.pets[state.active]} : null;
+const coinBadge = (tick) => `<span class="coin${tick?" tick":""}" id="coins" aria-label="${state.coins} coins">🪙 ${state.coins}</span>`;
 
 /* phrasal verbs & collocations → drill questions */
 function vocabItems(sec){
@@ -49,7 +65,7 @@ function exHTML(ex){ return esc(ex).replace(/\{([^}]+)\}/, "<b>$1</b>"); }
 let view = {name:"exams"};
 function go(v){ view = v; render(); window.scrollTo(0,0); }
 function render(){
-  ({exams, weeks, week:weekView, grammar, explainList, explain, exerciseList, vocab, practice, result})[view.name]();
+  ({exams, weeks, week:weekView, grammar, explainList, explain, exerciseList, vocab, practice, result, pet, shop, myPets})[view.name]();
 }
 function header(backTo, crumb){
   return `<div class="top"><button type="button" class="back" id="back">← Back</button>${crumb?`<span class="label crumb">${esc(crumb)}</span>`:""}</div>`;
@@ -70,8 +86,110 @@ function exams(){
     const ok = x.weeks.length>0;
     return `<button type="button" class="menu-btn" data-exam="${x.id}" ${ok?"":"disabled"}>
       <span class="t">${esc(x.name)}</span>${ok?'<span class="arr" aria-hidden="true">→</span>':'<span class="soon">Coming soon</span>'}</button>`;
-  }).join("")}</div>`;
+  }).join("")}</div>
+  <button type="button" class="pet-row" id="petrow">
+    <span class="pe" aria-hidden="true">${activePet()?activePet().pet.e:"🥚"}</span>
+    <span class="t">${activePet()?esc(activePet().name):"Get your free pet"}</span>
+    ${coinBadge()}
+  </button>`;
   $app.querySelectorAll("[data-exam]").forEach(b=>b.onclick=()=>go({name:"weeks", exam:b.dataset.exam}));
+  document.getElementById("petrow").onclick=()=>go({name:"pet"});
+}
+
+/* ── pet area ── */
+function pet(){
+  const a = activePet();
+  if(!a){
+    const commons = PETS.filter(x=>x.t===0);
+    $app.innerHTML = `
+    ${header()}
+    <div class="unit-head"><span class="label">Your pet</span><h2>Choose your first pet</h2></div>
+    <p class="note">It's free. You earn coins with every answer you get right first time, and you can buy more pets in the shop.</p>
+    <div class="pet-grid">${commons.map(x=>`
+      <button type="button" class="pet-card" data-adopt="${x.id}"><span class="pe" aria-hidden="true">${x.e}</span><span class="t">${x.n}</span></button>`).join("")}</div>`;
+    bindBack({name:"exams"});
+    $app.querySelectorAll("[data-adopt]").forEach(b=>b.onclick=()=>{
+      const x = petById(b.dataset.adopt); state.pets[x.id] = x.n; state.active = x.id; save(); go({name:"pet", rename:true});
+    });
+    return;
+  }
+  const words = petPool().length;
+  $app.innerHTML = `
+  ${header(null)}
+  <div class="pet-home">
+    <div class="pet-big" aria-hidden="true">${a.pet.e}</div>
+    ${view.rename ? `<form class="write" id="rn" autocomplete="off">
+        <input id="pname" type="text" maxlength="16" value="${esc(a.name)}" aria-label="Pet name">
+        <button class="btn" type="submit">Save</button></form>`
+      : `<h2>${esc(a.name)}</h2><button type="button" class="change" id="ren">Change name</button>`}
+    ${coinBadge()}
+  </div>
+  ${menu([
+    {id:"play", t:`Play with ${a.name}`, s:words>=4?`${PET_SIZE} questions`:"Soon"},
+    {id:"shopb", t:"Shop"},
+    {id:"mine", t:"My pets", s:`${Object.keys(state.pets).length}`}
+  ])}
+  <p class="note" style="margin-top:20px">${esc(a.name)} asks you about phrasal verbs, collocations and fixed phrases from your classes.</p>`;
+  bindBack({name:"exams"});
+  if(view.rename){
+    const inp = document.getElementById("pname"); inp.focus(); inp.select();
+    document.getElementById("rn").onsubmit = e => {
+      e.preventDefault(); const n = inp.value.trim().slice(0,16);
+      if(n){ state.pets[state.active] = n; save(); } go({name:"pet"});
+    };
+  } else document.getElementById("ren").onclick=()=>go({name:"pet", rename:true});
+  document.getElementById("play").onclick=startPetQuiz;
+  document.getElementById("shopb").onclick=()=>go({name:"shop"});
+  document.getElementById("mine").onclick=()=>go({name:"myPets"});
+}
+function shop(){
+  $app.innerHTML = `
+  <div class="top"><button type="button" class="back" id="back">← Back</button>${coinBadge()}</div>
+  <div class="unit-head"><h2>Shop</h2></div>
+  ${TIERS.map((tn,t)=>`
+    <div class="section"><span class="label">${tn} · 🪙 ${PETS.find(x=>x.t===t).p}</span>
+    <div class="pet-grid">${PETS.filter(x=>x.t===t).map(x=>{
+      const owned = state.pets[x.id]!==undefined;
+      const can = state.coins >= x.p;
+      const confirm = view.confirm===x.id;
+      return `<button type="button" class="pet-card${owned?" owned":""}${confirm?" confirm":""}" data-buy="${x.id}" ${owned||!can?"disabled":""}>
+        <span class="pe" aria-hidden="true">${x.e}</span><span class="t">${x.n}</span>
+        <span class="s">${owned?"Owned":confirm?`Buy for 🪙 ${x.p}?`:`🪙 ${x.p}`}</span></button>`;
+    }).join("")}</div></div>`).join("")}`;
+  bindBack({name:"pet"});
+  $app.querySelectorAll("[data-buy]").forEach(b=>b.onclick=()=>{
+    const x = petById(b.dataset.buy);
+    if(view.confirm!==x.id){ go({name:"shop", confirm:x.id}); return; }
+    if(state.coins < x.p || state.pets[x.id]!==undefined) return;
+    state.coins -= x.p; state.pets[x.id] = x.n; state.active = x.id; save();
+    go({name:"pet", rename:true});
+  });
+}
+function myPets(){
+  const ids = Object.keys(state.pets);
+  $app.innerHTML = `
+  ${header()}
+  <div class="unit-head"><h2>My pets</h2></div>
+  <div class="pet-grid">${ids.map(id=>{ const x = petById(id); return `
+    <button type="button" class="pet-card${id===state.active?" active":""}" data-pick="${id}"><span class="pe" aria-hidden="true">${x.e}</span>
+    <span class="t">${esc(state.pets[id])}</span><span class="s">${id===state.active?"With you now":"Choose"}</span></button>`; }).join("")}</div>`;
+  bindBack({name:"pet"});
+  $app.querySelectorAll("[data-pick]").forEach(b=>b.onclick=()=>{ state.active = b.dataset.pick; save(); go({name:"pet"}); });
+}
+/* every phrasal verb, collocation and fixed phrase from the published classes */
+function petPool(){
+  const out = [];
+  ["phrasal","colloc","fixed"].forEach(k=>{
+    const seen = new Set(), entries = [];
+    EXAMS.forEach(x=>x.weeks.forEach(w=>(w[k]?w[k].entries:[]).forEach(e=>{ if(!seen.has(e.term)){ seen.add(e.term); entries.push(e); } })));
+    if(entries.length>=4) vocabItems({entries, items:[]}).forEach(it=>out.push(it));
+  });
+  return out;
+}
+function startPetQuiz(){
+  const a = activePet(); if(!a) return;
+  const pool = petPool(); if(pool.length<4) return;
+  startSession({key:"pet", title:`${a.name} asks`, back:{name:"pet"}, petQuiz:true, petEmoji:a.pet.e, items:shuffle(pool).slice(0, PET_SIZE)});
 }
 
 /* 2 · week */
@@ -220,8 +338,8 @@ function practice(){
   else if(it.tries===1) fb = `<div class="fb hint"><span class="k">Not yet · hint</span>${esc(it.h)}</div>`;
 
   $app.innerHTML = `
-  <div class="top"><button type="button" class="back" id="back">← Stop</button><span class="label">${v.cleared} / ${v.total}</span></div>
-  <span class="label">${esc(v.title)}</span>
+  <div class="top"><button type="button" class="back" id="back">← Stop</button><span class="topr"><span class="label">${v.cleared} / ${v.total}</span>${coinBadge(v.tick)}</span></div>
+  <span class="label">${v.petEmoji?`<span class="petask" aria-hidden="true">${v.petEmoji}</span> `:""}${esc(v.title)}</span>
   <div class="bar"><i style="width:${pct}%"></i></div>
   ${it.again?`<div class="task"><span class="lvltag again">again</span></div>`:""}
   <p class="q">${q}</p>
@@ -249,6 +367,7 @@ function practice(){
   }
   const nx = document.getElementById("next");
   if(nx){ nx.onclick = nextItem; nx.focus({preventScroll:true}); }
+  v.tick = false;
 }
 function settle(it, ok){
   if(ok){ it.done = true; it.result = "ok"; }
@@ -256,7 +375,7 @@ function settle(it, ok){
   else { it.done = true; it.result = "bad"; }
   if(it.done && !view.seen.has(it.uid)){
     view.seen.add(it.uid);
-    if(it.result==="ok" && it.tries===0) view.firstRight++;
+    if(it.result==="ok" && it.tries===0){ view.firstRight++; state.coins++; view.earned = (view.earned||0)+1; view.tick = true; save(); }
   }
 }
 function nextItem(){
@@ -274,11 +393,11 @@ function nextItem(){
   if(v.queue.length){ practice(); window.scrollTo(0,0); return; }
   const pct = v.firstRight / v.total;
   const prev = state.best[v.key]; if(prev===undefined || pct>prev){ state.best[v.key]=pct; save(); }
-  go({name:"result", exam:v.exam, week:v.week, pct, firstRight:v.firstRight, total:v.total, session:v});
+  go({name:"result", exam:v.exam, week:v.week, pct, firstRight:v.firstRight, total:v.total, earned:v.earned||0, session:v});
 }
 function result(){
   const v = view, p = Math.round(v.pct*100), s = v.session;
-  const msg = p>=80 ? "Well done. Do it again tomorrow to make it stick."
+  const msg = s.petQuiz ? "Play again whenever you like: the words come from all your classes." : p>=80 ? "Well done. Do it again tomorrow to make it stick."
     : p>=50 ? "Getting there. Repeat it until you get 80% or more."
     : "Read the explanation again, then repeat the exercises.";
   $app.innerHTML = `
@@ -288,6 +407,7 @@ function result(){
     <div class="num">${p}%</div>
     <p>${v.firstRight} of ${v.total} right on the first try.</p>
     <p>${msg}</p>
+    ${v.earned?`<p class="earned">+${v.earned} 🪙</p>`:""}
     <div class="actions" style="justify-content:flex-start">
       <button type="button" class="btn" id="again">Again</button>
       ${s.rules?`<button type="button" class="btn ghost" id="rules">Explanation</button>`:""}
@@ -296,6 +416,7 @@ function result(){
   bindBack(s.back);
   document.getElementById("again").onclick=()=>{
     view = {exam:s.exam, week:s.week};
+    if(s.petQuiz){ startPetQuiz(); return; }
     const items = s.vocabK ? vocabSession(week()[s.vocabK]) : shuffle(s.src.map(({uid,need,missed,...it})=>it));
     startSession({key:s.key, title:s.title, back:s.back, showTopic:s.showTopic, rules:s.rules, vocabK:s.vocabK, items});
   };
