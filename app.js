@@ -157,6 +157,7 @@ function pet(){
       if(n){ state.pets[state.active] = n; save(); } go({name:"pet"});
     };
   } else document.getElementById("ren").onclick=()=>go({name:"pet", rename:true});
+  bindPetTricks(a);
   document.getElementById("shopb").onclick=()=>go({name:"shop"});
   document.getElementById("mine").onclick=()=>go({name:"myPets"});
   document.getElementById("gamesb").onclick=()=>go({name:"games"});
@@ -206,10 +207,11 @@ function myPets(){
   <div class="place-grid" style="margin-top:8px">${PLACES.filter(x=>state.places[x.id]).map(x=>{ const here = state.place===x.id, a = activePet();
     return `<button type="button" class="place-card${here?" here":""}" data-live="${x.id}">${sceneHTML(x.id, here && a ? a.pet.e : "", "small")}
       <span class="t">${x.n}</span><span class="s">${here?"You live here":"Move here"}</span></button>`; }).join("")}</div>
-  <p class="note" style="margin-top:16px">Buy more pets and places in the Shop.</p>`;
+  <button type="button" class="menu-btn" id="toshop" style="margin-top:18px"><span class="t">Buy more in the Shop</span><span class="arr" aria-hidden="true">→</span></button>`;
   bindBack({name:"pet"}); bindSpk();
   $app.querySelectorAll("[data-pick]").forEach(b=>b.onclick=()=>{ state.active = b.dataset.pick; save(); go({name:"pet"}); });
   $app.querySelectorAll("[data-live]").forEach(b=>b.onclick=()=>{ state.place = b.dataset.live; save(); go({name:"myPets"}); });
+  document.getElementById("toshop").onclick=()=>go({name:"shop"});
 }
 /* every phrasal verb, collocation and fixed phrase from the published classes */
 function petPool(){
@@ -747,6 +749,34 @@ function places(){
     if(state.coins < x.p) return;
     state.coins -= x.p; state.places[x.id] = true; state.place = x.id; save(); go({name:"shop", tab:"places"});
   });
+}
+
+/* ── tap your pet: it does a different trick every time ── */
+const TRICKS = [["jump","✨"],["spin","💫"],["dance","🎵"],["backflip","⭐"],["grow","💖"],["hop","💛"],["wiggle","🎶"],["flip","✨"]];
+let lastTrick = -1;
+function bindPetTricks(a){
+  const pet = $app.querySelector(".pet-home .scene-pet"), scene = $app.querySelector(".pet-home .scene");
+  if(!pet) return;
+  pet.setAttribute("role","button"); pet.setAttribute("tabindex","0"); pet.setAttribute("aria-label",`Play with ${a.name}`);
+  pet.removeAttribute("aria-hidden");
+  const go1 = () => {
+    let i; do { i = Math.floor(Math.random()*TRICKS.length); } while(i===lastTrick); lastTrick = i;
+    const [t, fx] = TRICKS[i];
+    pet.className = "scene-pet"; void pet.offsetWidth; pet.classList.add("trick", "t-"+t);
+    for(let k=0;k<5;k++){
+      const f = document.createElement("span"); f.className = "pet-fx"; f.textContent = fx;
+      f.style.left = (38 + Math.random()*24) + "%"; f.style.animationDelay = (k*90) + "ms"; f.style.setProperty("--dx", (Math.random()*80-40)+"px");
+      scene.appendChild(f); setTimeout(()=>f.remove(), 1500);
+    }
+    const v = PET_VOICE[a.pet.id];
+    if(v && Math.random() < .45){
+      const old = scene.querySelector(".pet-say"); if(old) old.remove();
+      const b = document.createElement("span"); b.className = "pet-say"; b.textContent = v[1] + "!"; scene.appendChild(b); setTimeout(()=>b.remove(), 1600);
+    }
+  };
+  pet.onclick = go1;
+  pet.onkeydown = e => { if(e.key==="Enter"||e.key===" "){ e.preventDefault(); go1(); } };
+  pet.addEventListener("animationend", e => { if(e.animationName.startsWith("tr-")) pet.className = "scene-pet"; });
 }
 
 /* ── scratch card ── */
