@@ -144,8 +144,9 @@ function pet(){
   ${menu([
     {id:"gamesb", t:"Games", s:`play with ${a.name}`},
     {id:"shopb", t:"Shop", s:"pets & places"},
-    {id:"mine", t:"My pets", s:`${Object.keys(state.pets).length}`}
-  ].concat((state.postcards||[]).length?[{id:"pcb", t:"My postcards", s:`${new Set(state.postcards.map(c=>c.id)).size} / ${POSTCARDS.length}`}]:[])
+    {id:"mine", t:"My pets", s:`${Object.keys(state.pets).length}`},
+    {id:"pcb", t:"My postcards", s:`${new Set((state.postcards||[]).map(c=>c.id)).size} / ${POSTCARDS.length}`}
+  ]
    .concat(state.photos.length?[{id:"photosb", t:"My photos", s:`${state.photos.length}`}]:[]))}
   <p class="note" style="margin-top:20px">Get ${GOAL} right answers a day. Every ${TICKET_EVERY} days in a row, you win a scratch card.</p>`;
   bindBack({name:"exams"});
