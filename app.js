@@ -21,7 +21,7 @@ const VOCAB = {phrasal:"Phrasal verbs", colloc:"Collocations", fixed:"Fixed phra
 
 /* ── coins & pets ── */
 const PET_SIZE = 10;
-const TIERS = ["Common","Special","Rare","Legendary"];
+const TIERS = ["Common","Special","Rare","Legendary","Epic"];
 const PETS = [
   {id:"cat",e:"🐱",n:"Cat",t:0,p:20},{id:"dog",e:"🐶",n:"Dog",t:0,p:20},{id:"rabbit",e:"🐰",n:"Rabbit",t:0,p:20},
   {id:"hamster",e:"🐹",n:"Hamster",t:0,p:20},{id:"turtle",e:"🐢",n:"Turtle",t:0,p:20},{id:"chick",e:"🐥",n:"Chick",t:0,p:20},
@@ -29,7 +29,18 @@ const PETS = [
   {id:"koala",e:"🐨",n:"Koala",t:1,p:60},{id:"otter",e:"🦦",n:"Otter",t:1,p:60},{id:"sloth",e:"🦥",n:"Sloth",t:1,p:60},
   {id:"tiger",e:"🐯",n:"Tiger",t:2,p:150},{id:"octopus",e:"🐙",n:"Octopus",t:2,p:150},{id:"penguin",e:"🐧",n:"Penguin",t:2,p:150},
   {id:"flamingo",e:"🦩",n:"Flamingo",t:2,p:150},{id:"hedgehog",e:"🦔",n:"Hedgehog",t:2,p:150},{id:"dolphin",e:"🐬",n:"Dolphin",t:2,p:150},
-  {id:"dragon",e:"🐉",n:"Dragon",t:3,p:400},{id:"unicorn",e:"🦄",n:"Unicorn",t:3,p:400},{id:"trex",e:"🦖",n:"T-Rex",t:3,p:400},{id:"whale",e:"🐋",n:"Blue whale",t:3,p:400}
+  {id:"dragon",e:"🐉",n:"Dragon",t:3,p:400},{id:"unicorn",e:"🦄",n:"Unicorn",t:3,p:400},{id:"trex",e:"🦖",n:"T-Rex",t:3,p:400},{id:"whale",e:"🐋",n:"Blue whale",t:3,p:400},
+  /* more pets */
+  {id:"frog",e:"🐸",n:"Frog",t:0,p:20},{id:"pig",e:"🐷",n:"Pig",t:0,p:20},{id:"mouse",e:"🐭",n:"Mouse",t:0,p:20},
+  {id:"duck",e:"🦆",n:"Duck",t:0,p:20},{id:"snail",e:"🐌",n:"Snail",t:0,p:20},{id:"bee",e:"🐝",n:"Bee",t:0,p:20},
+  {id:"raccoon",e:"🦝",n:"Raccoon",t:1,p:60},{id:"kangaroo",e:"🦘",n:"Kangaroo",t:1,p:60},{id:"llama",e:"🦙",n:"Llama",t:1,p:60},
+  {id:"wolf",e:"🐺",n:"Wolf",t:1,p:60},{id:"parrot",e:"🦜",n:"Parrot",t:1,p:60},{id:"zebra",e:"🦓",n:"Zebra",t:1,p:60},
+  {id:"shark",e:"🦈",n:"Shark",t:2,p:150},{id:"lion",e:"🦁",n:"Lion",t:2,p:150},{id:"crocodile",e:"🐊",n:"Crocodile",t:2,p:150},
+  {id:"eagle",e:"🦅",n:"Eagle",t:2,p:150},{id:"peacock",e:"🦚",n:"Peacock",t:2,p:150},{id:"giraffe",e:"🦒",n:"Giraffe",t:2,p:150},
+  {id:"dino",e:"🦕",n:"Dino",t:3,p:400},{id:"sdragon",e:"🐲",n:"Baby dragon",t:3,p:400},
+  /* characters */
+  {id:"alien",e:"👽",n:"Alien",t:4,p:800},{id:"robot",e:"🤖",n:"Robot",t:4,p:800},{id:"ghost",e:"👻",n:"Ghost",t:4,p:800},
+  {id:"wizard",e:"🧙",n:"Wizard",t:4,p:800},{id:"vampire",e:"🧛",n:"Vampire",t:4,p:800},{id:"genie",e:"🧞",n:"Genie",t:4,p:800}
 ];
 const petById = id => PETS.find(x=>x.id===id);
 const activePet = () => state.active && state.pets[state.active]!==undefined ? {pet:petById(state.active), name:state.pets[state.active]} : null;
