@@ -432,3 +432,4 @@ h1,h2,h3{font-family:var(--f-display);line-height:1.15;text-wrap:balance;margin:
 .spk-mini{position:absolute;top:5px;right:5px;width:30px;height:30px;border:0;border-radius:50%;background:var(--biro-soft);font-size:15px;line-height:1;cursor:pointer;display:grid;place-items:center}
 .say{position:absolute;left:50%;top:-10px;transform:translateX(-50%);background:var(--ink);color:var(--paper);font-family:var(--f-display);font-weight:700;font-size:14px;padding:4px 10px;border-radius:12px;white-space:nowrap;pointer-events:none;animation:sayUp 1.6s ease-out forwards;z-index:2}
 @keyframes sayUp{0%{opacity:0;transform:translate(-50%,6px)}15%{opacity:1;transform:translate(-50%,0)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-6px)}}
+.shop-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}

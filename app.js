@@ -143,8 +143,7 @@ function pet(){
   ${state.tickets>0?`<button type="button" class="menu-btn scratch-btn" id="scr"><span class="t">🎟️ Scratch card</span><span class="s">${state.tickets} waiting</span><span class="arr" aria-hidden="true">→</span></button>`:""}
   ${menu([
     {id:"gamesb", t:"Games", s:`play with ${a.name}`},
-    {id:"shopb", t:"Shop", s:"pets"},
-    {id:"placesb", t:"Places", s:"where your pet lives"},
+    {id:"shopb", t:"Shop", s:"pets & places"},
     {id:"mine", t:"My pets", s:`${Object.keys(state.pets).length}`}
   ].concat((state.postcards||[]).length?[{id:"pcb", t:"My postcards", s:`${new Set(state.postcards.map(c=>c.id)).size} / ${POSTCARDS.length}`}]:[])
    .concat(state.photos.length?[{id:"photosb", t:"My photos", s:`${state.photos.length}`}]:[]))}
@@ -160,15 +159,20 @@ function pet(){
   document.getElementById("shopb").onclick=()=>go({name:"shop"});
   document.getElementById("mine").onclick=()=>go({name:"myPets"});
   document.getElementById("gamesb").onclick=()=>go({name:"games"});
-  document.getElementById("placesb").onclick=()=>go({name:"places"});
   const sc = document.getElementById("scr"); if(sc) sc.onclick=()=>go({name:"scratch"});
   const ph = document.getElementById("photosb"); if(ph) ph.onclick=()=>go({name:"photos"});
   const pcb = document.getElementById("pcb"); if(pcb) pcb.onclick=()=>go({name:"postcards"});
 }
+function shopTabs(on){
+  return `<div class="top"><button type="button" class="back" id="back">← Back</button>${coinBadge()}</div>
+  <div class="unit-head shop-head"><h2>Shop</h2><div class="level" role="group" aria-label="Shop section">
+    <button type="button" data-tab="pets" aria-pressed="${on==="pets"}">Pets</button><button type="button" data-tab="places" aria-pressed="${on==="places"}">Places</button></div></div>`;
+}
+function bindTabs(){ $app.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>go({name:"shop", tab:b.dataset.tab})); }
 function shop(){
+  if(view.tab==="places"){ places(); return; }
   $app.innerHTML = `
-  <div class="top"><button type="button" class="back" id="back">← Back</button>${coinBadge()}</div>
-  <div class="unit-head"><h2>Shop</h2></div>
+  ${shopTabs("pets")}
   ${TIERS.map((tn,t)=>`
     <div class="section"><span class="label">${tn} · 🪙 ${PETS.find(x=>x.t===t).p}</span>
     <div class="pet-grid">${PETS.filter(x=>x.t===t).map(x=>{
@@ -179,7 +183,7 @@ function shop(){
         <span class="pe" aria-hidden="true">${x.e}</span><span class="t">${x.n}</span>
         <span class="s">${owned?"Owned":confirm?`Buy for 🪙 ${x.p}?`:`🪙 ${x.p}`}</span></button>${spkHTML(x, owned||can)}</div>`;
     }).join("")}</div></div>`).join("")}`;
-  bindBack({name:"pet"}); bindSpk();
+  bindBack({name:"pet"}); bindSpk(); bindTabs();
   $app.querySelectorAll("[data-buy]").forEach(b=>b.onclick=()=>{
     const x = petById(b.dataset.buy);
     if(view.confirm!==x.id){ go({name:"shop", confirm:x.id}); return; }
@@ -718,8 +722,7 @@ function sceneHTML(id, emoji, cls){
 function places(){
   const a = activePet();
   $app.innerHTML = `
-  <div class="top"><button type="button" class="back" id="back">← Back</button>${coinBadge()}</div>
-  <div class="unit-head"><h2>Places</h2></div>
+  ${shopTabs("places")}
   <p class="note">Choose where your pets live. Once you buy a place, it's yours.</p>
   <div class="place-grid">${PLACES.map(x=>{
     const owned = !!state.places[x.id], here = state.place===x.id, confirm = view.confirm===x.id, can = state.coins>=x.p;
@@ -728,13 +731,13 @@ function places(){
       ${sceneHTML(x.id, here && a ? a.pet.e : "", "small")}
       <span class="t">${x.n}</span><span class="s">${label}</span></button>`;
   }).join("")}</div>`;
-  bindBack({name:"pet"});
+  bindBack({name:"pet"}); bindTabs();
   $app.querySelectorAll("[data-place]").forEach(b=>b.onclick=()=>{
     const x = PLACES.find(p=>p.id===b.dataset.place);
-    if(state.places[x.id]){ state.place = x.id; save(); go({name:"places"}); return; }
-    if(view.confirm!==x.id){ go({name:"places", confirm:x.id}); return; }
+    if(state.places[x.id]){ state.place = x.id; save(); go({name:"shop", tab:"places"}); return; }
+    if(view.confirm!==x.id){ go({name:"shop", tab:"places", confirm:x.id}); return; }
     if(state.coins < x.p) return;
-    state.coins -= x.p; state.places[x.id] = true; state.place = x.id; save(); go({name:"places"});
+    state.coins -= x.p; state.places[x.id] = true; state.place = x.id; save(); go({name:"shop", tab:"places"});
   });
 }
 
