@@ -148,7 +148,7 @@ function pet(){
     {id:"mine", t:"My pets", s:`${Object.keys(state.pets).length}`}
   ].concat((state.postcards||[]).length?[{id:"pcb", t:"My postcards", s:`${new Set(state.postcards.map(c=>c.id)).size} / ${POSTCARDS.length}`}]:[])
    .concat(state.photos.length?[{id:"photosb", t:"My photos", s:`${state.photos.length}`}]:[]))}
-  <p class="note" style="margin-top:20px">Get ${GOAL} right answers a day (they don't need to be in a row). Every ${TICKET_EVERY} days in a row, you win a scratch card.</p>`;
+  <p class="note" style="margin-top:20px">Get ${GOAL} right answers a day. Every ${TICKET_EVERY} days in a row, you win a scratch card.</p>`;
   bindBack({name:"exams"});
   if(view.rename){
     const inp = document.getElementById("pname"); inp.focus(); inp.select();
