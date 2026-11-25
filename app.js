@@ -123,7 +123,6 @@ function pet(){
     });
     return;
   }
-  const words = petPool().length;
   $app.innerHTML = `
   ${header(null)}
   <div class="pet-home">
@@ -137,20 +136,19 @@ function pet(){
   <div class="streak-card">
     <div class="sc-flame" aria-hidden="true">🔥</div>
     <div class="sc-txt"><b>${streak()} ${streak()===1?"day":"days"} in a row</b>
-      <span>Today: ${Math.min(todayCount(),GOAL)} / ${GOAL} answers right first time</span>
+      <span>Today: ${Math.min(todayCount(),GOAL)} / ${GOAL} right answers</span>
       <span class="sc-bar"><i style="width:${Math.min(100,Math.round(todayCount()/GOAL*100))}%"></i></span></div>
     <div class="sc-week" aria-hidden="true">${weekDots()}</div>
   </div>
   ${state.tickets>0?`<button type="button" class="menu-btn scratch-btn" id="scr"><span class="t">🎟️ Scratch card</span><span class="s">${state.tickets} waiting</span><span class="arr" aria-hidden="true">→</span></button>`:""}
   ${menu([
-    {id:"play", t:`Play with ${a.name}`, s:words>=4?`${PET_SIZE} questions`:"Soon"},
-    {id:"gamesb", t:"Games"},
+    {id:"gamesb", t:"Games", s:`play with ${a.name}`},
     {id:"shopb", t:"Shop", s:"pets"},
     {id:"placesb", t:"Places", s:"where your pet lives"},
     {id:"mine", t:"My pets", s:`${Object.keys(state.pets).length}`}
   ].concat((state.postcards||[]).length?[{id:"pcb", t:"My postcards", s:`${new Set(state.postcards.map(c=>c.id)).size} / ${POSTCARDS.length}`}]:[])
    .concat(state.photos.length?[{id:"photosb", t:"My photos", s:`${state.photos.length}`}]:[]))}
-  <p class="note" style="margin-top:20px">Get ${GOAL} answers right first time every day. Every ${TICKET_EVERY} days in a row, you win a scratch card.</p>`;
+  <p class="note" style="margin-top:20px">Get ${GOAL} right answers a day (they don't need to be in a row). Every ${TICKET_EVERY} days in a row, you win a scratch card.</p>`;
   bindBack({name:"exams"});
   if(view.rename){
     const inp = document.getElementById("pname"); inp.focus(); inp.select();
@@ -159,7 +157,6 @@ function pet(){
       if(n){ state.pets[state.active] = n; save(); } go({name:"pet"});
     };
   } else document.getElementById("ren").onclick=()=>go({name:"pet", rename:true});
-  document.getElementById("play").onclick=startPetQuiz;
   document.getElementById("shopb").onclick=()=>go({name:"shop"});
   document.getElementById("mine").onclick=()=>go({name:"myPets"});
   document.getElementById("gamesb").onclick=()=>go({name:"games"});
@@ -178,11 +175,11 @@ function shop(){
       const owned = state.pets[x.id]!==undefined;
       const can = state.coins >= x.p;
       const confirm = view.confirm===x.id;
-      return `<button type="button" class="pet-card${owned?" owned":""}${confirm?" confirm":""}" data-buy="${x.id}" ${owned||!can?"disabled":""}>
+      return `<div class="pw"><button type="button" class="pet-card${owned?" owned":""}${confirm?" confirm":""}" data-buy="${x.id}" ${owned||!can?"disabled":""}>
         <span class="pe" aria-hidden="true">${x.e}</span><span class="t">${x.n}</span>
-        <span class="s">${owned?"Owned":confirm?`Buy for 🪙 ${x.p}?`:`🪙 ${x.p}`}</span></button>`;
+        <span class="s">${owned?"Owned":confirm?`Buy for 🪙 ${x.p}?`:`🪙 ${x.p}`}</span></button>${spkHTML(x, owned||can)}</div>`;
     }).join("")}</div></div>`).join("")}`;
-  bindBack({name:"pet"});
+  bindBack({name:"pet"}); bindSpk();
   $app.querySelectorAll("[data-buy]").forEach(b=>b.onclick=()=>{
     const x = petById(b.dataset.buy);
     if(view.confirm!==x.id){ go({name:"shop", confirm:x.id}); return; }
@@ -196,10 +193,10 @@ function myPets(){
   $app.innerHTML = `
   ${header()}
   <div class="unit-head"><h2>My pets</h2></div>
-  <div class="pet-grid">${ids.map(id=>{ const x = petById(id); return `
+  <div class="pet-grid">${ids.map(id=>{ const x = petById(id); return `<div class="pw">
     <button type="button" class="pet-card${id===state.active?" active":""}" data-pick="${id}"><span class="pe" aria-hidden="true">${x.e}</span>
-    <span class="t">${esc(state.pets[id])}</span><span class="s">${id===state.active?"With you now":"Choose"}</span></button>`; }).join("")}</div>`;
-  bindBack({name:"pet"});
+    <span class="t">${esc(state.pets[id])}</span><span class="s">${id===state.active?"With you now":"Choose"}</span></button>${spkHTML(x, true)}</div>`; }).join("")}</div>`;
+  bindBack({name:"pet"}); bindSpk();
   $app.querySelectorAll("[data-pick]").forEach(b=>b.onclick=()=>{ state.active = b.dataset.pick; save(); go({name:"pet"}); });
 }
 /* every phrasal verb, collocation and fixed phrase from the published classes */
@@ -464,8 +461,9 @@ function ftest(){
     });
     if(v.round===0){
       v.first = v.gaps.filter(x=>x.status==="ok").length;
-      v.earned = v.first; state.coins += v.first; if(v.first) v.tick = true; countDay(v.first);
+      v.earned = v.first; state.coins += v.first; if(v.first) v.tick = true;
     }
+    const fresh = v.gaps.filter(x=>x.status==="ok" && !x.counted); fresh.forEach(x=>x.counted = true); countDay(fresh.length);
     save(); v.round++; ftest();
   };
 }
@@ -552,7 +550,8 @@ function settle(it, ok){
   else { it.done = true; it.result = "bad"; }
   if(it.done && !view.seen.has(it.uid)){
     view.seen.add(it.uid);
-    if(it.result==="ok" && it.tries===0){ view.firstRight++; state.coins++; view.earned = (view.earned||0)+1; view.tick = true; countDay(1); save(); }
+    if(it.result==="ok" && it.tries===0){ view.firstRight++; state.coins++; view.earned = (view.earned||0)+1; view.tick = true; }
+    if(it.result==="ok"){ countDay(1); save(); }
   }
 }
 function nextItem(){
@@ -602,7 +601,7 @@ function result(){
 }
 
 /* ── daily goal, streak, scratch cards ── */
-const GOAL = 10;                 // answers right first time in a day
+const GOAL = 10;                 // right answers in a day, not in a row
 const TICKET_EVERY = 3;          // a scratch card every 3 days in a row
 const GAME_CAP = 40;             // most coins a day from games
 const PRIZE_PHOTOS = [];         // e.g. ["prizes/sunset.jpg", …]: teacher's photos
@@ -836,6 +835,8 @@ function games(){
   $app.innerHTML = `
   <div class="top"><button type="button" class="back" id="back">← Back</button>${coinBadge()}</div>
   <div class="unit-head"><h2>Games</h2></div>
+  ${menu([{id:"g0", t:`Play with ${activePet()?activePet().name:"your pet"}`, s:petPool().length>=4?`${PET_SIZE} questions`:"soon"}])}
+  <div class="games-gap"></div>
   ${ok ? menu([
     {id:"g1", t:"Word search", s:"find the expression"},
     {id:"g2", t:"Hangman", s:"guess the letters"},
@@ -845,6 +846,7 @@ function games(){
   ]) : `<p class="note">The games open when there's more vocabulary in your classes.</p>`}
   <p class="note" style="margin-top:20px">Words from all your classes. You can win up to ${GAME_CAP} coins a day with games.</p>`;
   bindBack({name:"pet"});
+  document.getElementById("g0").onclick=()=>{ if(petPool().length>=4) startPetQuiz(); };
   if(!ok) return;
   document.getElementById("g1").onclick=()=>startWordSearch();
   document.getElementById("g2").onclick=()=>startHangman();
@@ -912,6 +914,20 @@ function startHangman(){
   const e = pool[Math.floor(Math.random()*pool.length)];
   go({name:"hangman", e, guessed:[], lives:6, over:false});
 }
+function hangmanSVG(miss, lost, anim){
+  const parts = [
+    `<circle cx="112" cy="46" r="13"/>`,
+    `<path d="M112 59 V100"/>`,
+    `<path d="M112 70 L96 88"/>`,
+    `<path d="M112 70 L128 88"/>`,
+    `<path d="M112 100 L98 124"/>`,
+    `<path d="M112 100 L126 124"/>`
+  ];
+  return `<div class="hm-draw" role="img" aria-label="${miss} of 6 mistakes"><svg viewBox="0 0 160 140" aria-hidden="true">
+    <g class="hm-gallows"><path d="M14 134 H82 M34 134 V8 H112 V33 M34 30 L56 8"/></g>
+    <g class="hm-man${lost?" lost":""}${anim?" anim":""}">${parts.slice(0,miss).join("")}</g></svg>
+    <span class="hm-count">${6-miss} ${6-miss===1?"try":"tries"} left</span></div>`;
+}
 function hangman(){
   const v = view, word = v.e.term.toUpperCase();
   const solved = [...lettersOf(word)].every(ch=>v.guessed.includes(ch));
@@ -919,7 +935,7 @@ function hangman(){
   const shown = [...word].map(ch=>/[A-Z]/.test(ch) ? `<span class="hm-l${v.guessed.includes(ch)||v.over?" on":""}${v.over&&!v.guessed.includes(ch)?" miss":""}">${v.guessed.includes(ch)||v.over?ch:"&nbsp;"}</span>` : (ch===" " ? `<span class="hm-gap"></span>` : `<span class="hm-p">${esc(ch)}</span>`)).join("");
   $app.innerHTML = `
   <div class="top"><button type="button" class="back" id="back">← Games</button>${coinBadge()}</div>
-  <div class="hm-lives" aria-label="${v.lives} lives left">${"❤️".repeat(Math.max(0,v.lives))}${"🤍".repeat(6-Math.max(0,v.lives))}</div>
+  ${hangmanSVG(6-Math.max(0,v.lives), v.over && !v.won, v.anim)}
   <p class="task">${esc(KIND[v.e.k])} · it means: <b>${esc(v.e.m)}</b></p>
   <div class="hm-word">${shown}</div>
   ${v.over ? `<div class="fb ${v.won?"ok":"bad"}"><span class="k">${v.won?"Well done!":"Not this time"}</span>${esc(v.e.term)} = ${esc(v.e.m)}.</div>${v.res?coinsLine(v.res):""}
@@ -931,7 +947,7 @@ function hangman(){
   bindBack({name:"games"});
   if(v.over){ document.getElementById("again").onclick = startHangman; return; }
   $app.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{
-    const ch = b.dataset.k; v.guessed.push(ch); if(!word.includes(ch)) v.lives--; hangman();
+    const ch = b.dataset.k; v.guessed.push(ch); v.anim = !word.includes(ch); if(v.anim) v.lives--; hangman();
   });
 }
 
@@ -1070,6 +1086,11 @@ function bindInstall(){
 
 /* ── postcards: the pet travels to famous places (drawn, same look on every phone) ── */
 const POSTCARDS = [
+  {id:"barcelona", n:"Barcelona", c:"Spain"},
+  {id:"granada", n:"Granada", c:"Spain"},
+  {id:"seville", n:"Seville", c:"Spain"},
+  {id:"madrid", n:"Madrid", c:"Spain"},
+  {id:"tenerife", n:"Tenerife", c:"Spain"},
   {id:"paris", n:"Paris", c:"France"},
   {id:"giza", n:"Giza", c:"Egypt"},
   {id:"london", n:"London", c:"United Kingdom"},
@@ -1079,10 +1100,111 @@ const POSTCARDS = [
   {id:"wall", n:"The Great Wall", c:"China"},
   {id:"fuji", n:"Mount Fuji", c:"Japan"},
   {id:"sydney", n:"Sydney", c:"Australia"},
-  {id:"pisa", n:"Pisa", c:"Italy"}
+  {id:"pisa", n:"Pisa", c:"Italy"},
+  {id:"rio", n:"Rio de Janeiro", c:"Brazil"},
+  {id:"machu", n:"Machu Picchu", c:"Peru"},
+  {id:"moai", n:"Easter Island", c:"Chile"},
+  {id:"athens", n:"Athens", c:"Greece"},
+  {id:"amsterdam", n:"Amsterdam", c:"Netherlands"},
+  {id:"santorini", n:"Santorini", c:"Greece"},
+  {id:"chichen", n:"Chichén Itzá", c:"Mexico"}
 ];
 function postcardSVG(id){
   const P = {
+  barcelona:`<defs><linearGradient id="pc-bc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc79a"/><stop offset="1" stop-color="#fff0dc"/></linearGradient></defs>
+    <rect width="320" height="200" fill="url(#pc-bc)"/><circle cx="62" cy="50" r="20" fill="#fff6d0"/>
+    <g fill="#c99460">${[[168,82,11],[196,46,13],[228,30,15],[260,44,13],[290,80,11]].map(([x,t,w])=>`<path d="M${x-w} 176 L${x-w*.55} ${t+22} Q${x} ${t-8} ${x+w*.55} ${t+22} L${x+w} 176Z"/>`).join("")}</g>
+    <g fill="#e9b949">${[[168,82],[196,46],[228,30],[260,44],[290,80]].map(([x,t])=>`<circle cx="${x}" cy="${t+4}" r="4"/>`).join("")}</g>
+    <g fill="#8a5d34">${[[168,82],[196,46],[228,30],[260,44],[290,80]].map(([x,t])=>[0,1,2,3].map(i=>`<rect x="${x-1.5}" y="${t+36+i*24}" width="3" height="12" rx="1.5"/>`).join("")).join("")}</g>
+    <path d="M150 176 V140 Q228 118 306 140 V176Z" fill="#b5804f"/><path d="M212 176 V150 Q228 138 244 150 V176Z" fill="#6d4a2a"/>
+    <path d="M0 172 Q160 164 320 174 V200 H0Z" fill="#d9bd8f"/>`,
+  granada:`<defs><linearGradient id="pc-gr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fd0f0"/><stop offset="1" stop-color="#eef7fc"/></linearGradient></defs>
+    <rect width="320" height="200" fill="url(#pc-gr)"/>
+    <path d="M0 112 L60 62 L110 96 L172 44 L236 100 L280 70 L320 92 V200 H0Z" fill="#a9bccf"/>
+    <path d="M48 72 L60 62 L74 72 L66 70 L60 76Z M158 56 L172 44 L188 58 L178 55 L172 62Z M270 78 L280 70 L292 79 L284 77Z" fill="#fff"/>
+    <path d="M0 176 Q90 120 320 136 V200 H0Z" fill="#7da35d"/>
+    <rect x="80" y="120" width="210" height="30" fill="#c8714a"/>
+    <g fill="#b5603c"><rect x="96" y="96" width="30" height="44"/><rect x="172" y="84" width="42" height="56"/><rect x="250" y="100" width="28" height="40"/></g>
+    <g fill="#c8714a">${[96,104,112,120,172,181,190,199,208,250,258,266].map(x=>`<rect x="${x}" y="${x<150?90:x<240?78:94}" width="5" height="7"/>`).join("")}</g>
+    <g fill="#7a3d22"><rect x="186" y="104" width="6" height="12" rx="3"/><rect x="196" y="104" width="6" height="12" rx="3"/><rect x="108" y="112" width="5" height="10" rx="2.5"/></g>
+    <g fill="#2f5d37"><ellipse cx="60" cy="150" rx="6" ry="22"/><ellipse cx="300" cy="150" rx="6" ry="20"/><ellipse cx="44" cy="158" rx="5" ry="16"/></g>
+    <path d="M0 178 Q160 168 320 180 V200 H0Z" fill="#6b9450"/>`,
+  seville:`<defs><linearGradient id="pc-sv" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cc4ee"/><stop offset="1" stop-color="#e6f5fc"/></linearGradient></defs>
+    <rect width="320" height="200" fill="url(#pc-sv)"/><circle cx="270" cy="40" r="18" fill="#ffe27a"/>
+    <rect x="196" y="74" width="44" height="104" fill="#d7a066"/>
+    <g fill="#b77f47">${[0,1,2,3].map(i=>`<rect x="212" y="${86+i*22}" width="12" height="14" rx="6"/>`).join("")}</g>
+    <rect x="200" y="48" width="36" height="28" fill="#f0dfb8"/><g fill="#d9bb7f"><rect x="206" y="54" width="7" height="16" rx="3.5"/><rect x="223" y="54" width="7" height="16" rx="3.5"/></g>
+    <rect x="206" y="32" width="24" height="18" fill="#eedcb1"/><rect x="211" y="20" width="14" height="14" fill="#e6cf9c"/>
+    <path d="M218 6 V22" stroke="#9c7a3e" stroke-width="3"/><circle cx="218" cy="8" r="3" fill="#c9a04a"/>
+    <path d="M0 170 Q160 164 320 172 V200 H0Z" fill="#e8d2a4"/>
+    <g>${[[52,150],[110,156],[290,154]].map(([x,y])=>`<rect x="${x-2}" y="${y}" width="4" height="22" fill="#7a5238"/><circle cx="${x}" cy="${y-6}" r="18" fill="#4f8f3f"/><g fill="#f39a1e"><circle cx="${x-8}" cy="${y-8}" r="3"/><circle cx="${x+6}" cy="${y-12}" r="3"/><circle cx="${x+2}" cy="${y}" r="3"/><circle cx="${x-4}" cy="${y-18}" r="3"/></g>`).join("")}</g>`,
+  madrid:`<defs><linearGradient id="pc-md" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fd2f2"/><stop offset="1" stop-color="#eef8fd"/></linearGradient></defs>
+    <rect width="320" height="200" fill="url(#pc-md)"/><ellipse cx="80" cy="40" rx="30" ry="9" fill="#fff" opacity=".9"/>
+    <rect x="96" y="92" width="200" height="84" fill="#e6dfcc"/><rect x="90" y="84" width="212" height="10" fill="#d4cab1"/>
+    <rect x="160" y="58" width="72" height="28" fill="#ddd4bd"/><path d="M156 58 H236 L230 50 H162Z" fill="#cfc4a8"/>
+    <g fill="#8fbede"><path d="M178 176 V130 Q196 108 214 130 V176Z"/><path d="M124 176 V136 Q140 118 156 136 V176Z"/><path d="M236 176 V136 Q252 118 268 136 V176Z"/><rect x="102" y="124" width="14" height="52"/><rect x="276" y="124" width="14" height="52"/></g>
+    <g fill="#cfc4a8">${[120,160,172,220,232,272].map(x=>`<rect x="${x}" y="98" width="5" height="78"/>`).join("")}</g>
+    <path d="M0 174 Q160 168 320 176 V200 H0Z" fill="#9cbf6e"/>
+    <g fill="#5d9a48"><circle cx="40" cy="146" r="22"/><circle cx="300" cy="150" r="18"/></g>`,
+  tenerife:`<defs><linearGradient id="pc-tf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#70c0ec"/><stop offset="1" stop-color="#e4f4fc"/></linearGradient></defs>
+    <rect width="320" height="200" fill="url(#pc-tf)"/>
+    <path d="M40 160 L170 46 L300 160Z" fill="#8a6650"/><path d="M170 46 L300 160 L232 160Z" fill="#735440"/>
+    <path d="M150 64 L170 46 L192 66 L182 62 L174 70 L166 62 L158 68Z" fill="#fff"/>
+    <rect y="150" width="320" height="50" fill="#2b7fb8"/><path d="M0 162 q20 -4 40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0" stroke="#8ccbec" stroke-width="2" fill="none"/>
+    <path d="M150 200 Q190 170 320 176 V200Z" fill="#2e2a28"/>
+    <path d="M286 182 Q280 150 292 118" stroke="#7a5a3a" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <g fill="#3f8f45"><path d="M292 118 Q270 108 254 120 Q274 114 292 120Z"/><path d="M292 118 Q314 106 320 122 Q308 114 292 120Z"/><path d="M292 118 Q284 96 268 92 Q286 100 291 120Z"/><path d="M292 118 Q304 96 318 96 Q302 104 293 120Z"/></g>`,
+  rio:`<defs><linearGradient id="pc-ri" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffae86"/><stop offset="1" stop-color="#ffe6cf"/></linearGradient></defs>
+    <rect width="320" height="200" fill="url(#pc-ri)"/>
+    <path d="M140 172 Q190 92 236 70 Q262 80 320 168Z" fill="#4c7a4c"/>
+    <g fill="#f4f1ea"><rect x="233" y="34" width="7" height="36" rx="2"/><rect x="216" y="40" width="41" height="5" rx="2.5"/><circle cx="236.5" cy="30" r="5"/><path d="M231 50 L242 50 L244 70 L229 70Z"/></g>
+    <rect y="160" width="320" height="40" fill="#3a83b8"/>
+    <path d="M10 166 Q18 108 48 104 Q74 108 84 166Z" fill="#5b7e58"/>
+    <path d="M0 188 Q120 176 200 190 Q260 200 320 186 V200 H0Z" fill="#f2d9a2"/>`,
+  machu:`<defs><linearGradient id="pc-mp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe2f2"/><stop offset="1" stop-color="#f3fafc"/></linearGradient></defs>
+    <rect width="320" height="200" fill="url(#pc-mp)"/>
+    <path d="M180 150 Q210 30 244 36 Q270 52 300 150Z" fill="#3f7c49"/><path d="M0 140 Q60 96 120 130 Z" fill="#6c9a72"/>
+    <ellipse cx="90" cy="70" rx="40" ry="10" fill="#fff" opacity=".85"/><ellipse cx="260" cy="96" rx="36" ry="8" fill="#fff" opacity=".8"/>
+    <g fill="#86b86d" stroke="#5f8f4f" stroke-width="2">${[0,1,2,3].map(i=>`<path d="M${0+i*10} ${150+i*12} H${320-i*6} V${162+i*12} H${0+i*10}Z"/>`).join("")}</g>
+    <g fill="#a9a398">${[[60,132,26,16],[96,128,30,20],[136,134,22,14],[250,136,28,14]].map(([x,y,w,h])=>`<rect x="${x}" y="${y}" width="${w}" height="${h}"/><path d="M${x-2} ${y} L${x+w/2} ${y-10} L${x+w+2} ${y}Z" fill="#8c8578"/>`).join("")}</g>
+    <g fill="#5f594f"><rect x="106" y="136" width="6" height="12"/><rect x="70" y="138" width="5" height="10"/></g>`,
+  moai:`<defs><linearGradient id="pc-mo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffcf8e"/><stop offset="1" stop-color="#fff1dc"/></linearGradient></defs>
+    <rect width="320" height="200" fill="url(#pc-mo)"/><circle cx="250" cy="120" r="26" fill="#ffe7a8"/>
+    <rect y="128" width="320" height="30" fill="#3d86bd"/>
+    <path d="M0 150 Q160 138 320 152 V200 H0Z" fill="#7aa85c"/>
+    <rect x="40" y="168" width="250" height="12" fill="#8a7f72"/>
+    ${[[80,1],[140,0],[200,1],[256,0]].map(([x,hat])=>`<path d="M${x-15} 170 L${x-15} 106 Q${x-15} 86 ${x} 86 Q${x+15} 86 ${x+15} 106 L${x+15} 170Z" fill="#6f625a"/>
+      <rect x="${x-14}" y="104" width="28" height="6" fill="#574c45"/><path d="M${x} 108 L${x+5} 128 L${x-5} 128Z" fill="#5b5049"/><rect x="${x-8}" y="136" width="16" height="3" fill="#574c45"/>
+      ${hat?`<ellipse cx="${x}" cy="86" rx="13" ry="7" fill="#a5523a"/>`:""}`).join("")}`,
+  athens:`<defs><linearGradient id="pc-at" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8ccff2"/><stop offset="1" stop-color="#eef8fd"/></linearGradient></defs>
+    <rect width="320" height="200" fill="url(#pc-at)"/><circle cx="56" cy="44" r="18" fill="#ffe27a"/>
+    <path d="M0 178 Q70 122 160 128 Q250 122 320 164 V200 H0Z" fill="#b59a6b"/>
+    <rect x="104" y="124" width="192" height="6" fill="#e6ddc6"/><rect x="98" y="130" width="204" height="6" fill="#ddd3b9"/>
+    <g fill="#f0e9d6">${Array.from({length:9},(_,i)=>`<rect x="${112+i*21}" y="92" width="9" height="32"/>`).join("")}</g>
+    <rect x="106" y="82" width="188" height="11" fill="#e6ddc6"/><path d="M104 82 L200 62 L296 82Z" fill="#ece4cf"/>
+    <g fill="#6e8f4a"><circle cx="40" cy="160" r="14"/><circle cx="300" cy="166" r="12"/></g>`,
+  amsterdam:`<defs><linearGradient id="pc-am" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b6d3ea"/><stop offset="1" stop-color="#eef4f9"/></linearGradient></defs>
+    <rect width="320" height="200" fill="url(#pc-am)"/><ellipse cx="240" cy="36" rx="34" ry="10" fill="#fff" opacity=".9"/>
+    ${[["#8b3a2e",70],["#3d5a6e",54],["#c9a46a",64],["#6b4a3a",48],["#2f5a4c",60],["#a8432f",56],["#4e6a80",66]].map(([c,t],i)=>{ const x = 6+i*44;
+      return `<path d="M${x} 158 V${t+14} H${x+6} V${t+6} H${x+12} V${t} H${x+28} V${t+6} H${x+34} V${t+14} H${x+40} V158Z" fill="${c}"/>
+      <g fill="#f4efe3">${[0,1,2].map(r=>`<rect x="${x+8}" y="${t+24+r*22}" width="8" height="12"/><rect x="${x+24}" y="${t+24+r*22}" width="8" height="12"/>`).join("")}</g>
+      <rect x="${x+16}" y="${t+3}" width="8" height="8" fill="#f4efe3"/>`; }).join("")}
+    <rect y="158" width="320" height="42" fill="#4a7ea3"/><g stroke="#8db4cf" stroke-width="2">${[20,80,150,220,280].map(x=>`<path d="M${x} 170 H${x+26} M${x+10} 184 H${x+40}"/>`).join("")}</g>
+    <path d="M190 166 H250 L242 176 H198Z" fill="#7a4b2a"/>`,
+  santorini:`<defs><linearGradient id="pc-sa" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb88f"/><stop offset="1" stop-color="#ffe9d4"/></linearGradient></defs>
+    <rect width="320" height="200" fill="url(#pc-sa)"/><circle cx="70" cy="96" r="22" fill="#ffd56b"/>
+    <rect y="110" width="320" height="90" fill="#2a76b6"/><path d="M0 124 q20 -4 40 0 t40 0 t40 0 t40 0" stroke="#7fb6e0" stroke-width="2" fill="none"/>
+    <path d="M130 200 L150 120 Q200 80 320 76 V200Z" fill="#9b6b52"/>
+    <g fill="#fdfdfb">${[[160,112,30,22],[196,100,26,24],[226,92,34,22],[268,86,30,24],[176,136,32,22],[214,124,30,24],[250,116,34,24],[290,112,30,26],[200,150,30,22],[240,144,34,22],[282,140,38,24]].map(([x,y,w,h])=>`<rect x="${x}" y="${y}" width="${w}" height="${h}"/>`).join("")}</g>
+    <g fill="#1f5fbf"><path d="M196 100 Q209 82 222 100Z"/><path d="M250 116 Q267 96 284 116Z"/><path d="M240 144 Q257 126 274 144Z"/></g>
+    <g fill="#3a6fb0">${[[166,118],[204,106],[234,98],[276,92],[184,142],[222,130],[296,118],[208,156],[290,146]].map(([x,y])=>`<rect x="${x}" y="${y}" width="6" height="9" rx="3"/>`).join("")}</g>`,
+  chichen:`<defs><linearGradient id="pc-ch" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fd0f2"/><stop offset="1" stop-color="#eaf7fd"/></linearGradient></defs>
+    <rect width="320" height="200" fill="url(#pc-ch)"/><ellipse cx="70" cy="40" rx="30" ry="9" fill="#fff" opacity=".9"/>
+    <path d="M0 150 Q40 128 80 146 Q120 126 160 148 Q210 124 250 146 Q290 128 320 144 V200 H0Z" fill="#4f8f45"/>
+    <g fill="#c2a97c">${Array.from({length:8},(_,i)=>{ const w = 220-i*20, y = 170-i*11; return `<rect x="${160-w/2}" y="${y-11}" width="${w}" height="11"/>`; }).join("")}</g>
+    <g fill="#a88f63">${Array.from({length:8},(_,i)=>{ const w = 220-i*20, y = 170-i*11; return `<rect x="${160+w/2-w*.18}" y="${y-11}" width="${w*.18}" height="11"/>`; }).join("")}</g>
+    <path d="M148 170 L152 82 H168 L172 170Z" fill="#9c8358"/><g stroke="#c2a97c" stroke-width="1.5">${Array.from({length:12},(_,i)=>`<path d="M${149+i*.3} ${166-i*7} H${171-i*.3}"/>`).join("")}</g>
+    <rect x="138" y="62" width="44" height="22" fill="#b89d70"/><rect x="152" y="70" width="16" height="14" fill="#6e5a3a"/><rect x="134" y="58" width="52" height="6" fill="#a88f63"/>`,
   paris:`<defs><linearGradient id="pc-p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb38a"/><stop offset="1" stop-color="#ffe6cc"/></linearGradient></defs>
     <rect width="320" height="200" fill="url(#pc-p)"/><circle cx="110" cy="70" r="24" fill="#fff3c4" opacity=".9"/>
     <path d="M0 172 Q160 160 320 172 V200 H0Z" fill="#8cc07a"/>
@@ -1162,20 +1284,22 @@ function postcardSVG(id){
   };
   return `<svg class="scene-svg" viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${P[id]||""}</svg>`;
 }
-const PC_FLAG = {paris:"🇫🇷", giza:"🇪🇬", london:"🇬🇧", newyork:"🇺🇸", rome:"🇮🇹", agra:"🇮🇳", wall:"🇨🇳", fuji:"🇯🇵", sydney:"🇦🇺", pisa:"🇮🇹"};
+const PC_FLAG = {paris:"🇫🇷", giza:"🇪🇬", london:"🇬🇧", newyork:"🇺🇸", rome:"🇮🇹", agra:"🇮🇳", wall:"🇨🇳", fuji:"🇯🇵", sydney:"🇦🇺", pisa:"🇮🇹",
+  barcelona:"🇪🇸", granada:"🇪🇸", seville:"🇪🇸", madrid:"🇪🇸", tenerife:"🇪🇸", rio:"🇧🇷", machu:"🇵🇪", moai:"🇨🇱", athens:"🇬🇷", amsterdam:"🇳🇱", santorini:"🇬🇷", chichen:"🇲🇽"};
 function postcardFront(id, emoji, small){
   const x = POSTCARDS.find(p=>p.id===id);
   return `<div class="scene${small?" small":""}">${postcardSVG(id)}${emoji?`<span class="scene-pet pc-pet" aria-hidden="true">${emoji}</span>`:""}
     <span class="pc-hello">Hello from ${esc(x.n)}!</span></div>`;
 }
 /* a postcard that turns over when tapped: picture on the front, the pet's message on the back */
+const cpHTML = t => esc(t).replace(/\[\[(.+?)\]\]/g, '<span class="pc-cp">$1</span>');
 function postcardFlip(card){
   const pet = petById(card.pet), m = card.m, x = POSTCARDS.find(p=>p.id===card.id);
   return `<div class="pc-flip" role="button" tabindex="0" aria-label="Turn the postcard over"><div class="pc-in">
     <div class="pc-face pc-front">${postcardFront(card.id, pet?pet.e:"")}<span class="pc-tap">Tap to turn over ↻</span></div>
     <div class="pc-face pc-back">
       <div class="pc-stamp" aria-hidden="true"><span>${PC_FLAG[card.id]||"✉️"}</span><i>${esc(x.c)}</i></div>
-      <div class="pc-msg"><p class="pc-g">${esc(m.g)}</p><p>${esc(m.body)}</p><p>${esc(m.c)}</p>
+      <div class="pc-msg"><p class="pc-g">${cpHTML(m.g)}</p><p>${cpHTML(m.body)}</p><p>${cpHTML(m.c)}</p>
       <p class="pc-sign">${esc(m.s)}<br><b>${esc(m.name)}</b> ${pet?pet.e:""}</p></div>
     </div></div></div>`;
 }
@@ -1204,20 +1328,50 @@ function postcardView(){
 
 /* ── postcard messages: every pet has its own voice and catchphrase (Animal Crossing style) ── */
 const PET_VOICE = {
-  cat:["grumpy","meh-ow"], dog:["sporty","woof woof"], rabbit:["sweet","hop hop"], hamster:["lazy","nom nom"],
-  turtle:["lazy","slowpoke"], chick:["peppy","cheep cheep"], fox:["fancy","foxy"], panda:["lazy","bamboo"],
-  owl:["smart","hoot hoot"], koala:["lazy","gumleaf"], otter:["sweet","splish"], sloth:["lazy","sloooow"],
-  tiger:["sporty","rawr"], octopus:["smart","inky"], penguin:["peppy","waddle waddle"], flamingo:["fancy","pink-tastic"],
-  hedgehog:["sweet","prickle"], dolphin:["peppy","squeak"], dragon:["mighty","flame on"], unicorn:["peppy","sparkle"],
-  trex:["mighty","STOMP"], whale:["mighty","big splash"], frog:["sweet","ribbit"], pig:["lazy","oink"],
-  mouse:["sweet","squeaky"], duck:["peppy","quack"], snail:["lazy","sliiide"], bee:["peppy","buzz buzz"],
-  raccoon:["grumpy","scram"], kangaroo:["sporty","boing"], llama:["fancy","llama-zing"], wolf:["grumpy","awoo"],
-  parrot:["peppy","squawk"], zebra:["sporty","stripes"], shark:["grumpy","chomp"], lion:["mighty","ROAR"],
-  crocodile:["grumpy","snap snap"], eagle:["sporty","soar"], peacock:["fancy","fabulous"], giraffe:["fancy","lofty"],
+  cat:["grumpy","meh-ow"], dog:["sporty","woof woof"], rabbit:["sweet","hop hop"], hamster:["foodie","nom nom"],
+  turtle:["chill","dude"], chick:["peppy","cheep cheep"], fox:["fancy","foxy"], panda:["lazy","bamboo"],
+  owl:["smart","hoot hoot"], koala:["lazy","gumleaf"], otter:["chill","splish"], sloth:["lazy","sloooow"],
+  tiger:["sporty","rawr"], octopus:["pirate","arrr"], penguin:["peppy","waddle waddle"], flamingo:["drama","pink-tastic"],
+  hedgehog:["shy","prickle"], dolphin:["chill","squeak"], dragon:["mighty","flame on"], unicorn:["peppy","sparkle"],
+  trex:["mighty","STOMP"], whale:["mighty","big splash"], frog:["chill","ribbit"], pig:["foodie","oink"],
+  mouse:["shy","squeaky"], duck:["peppy","quack"], snail:["shy","um"], bee:["peppy","buzz buzz"],
+  raccoon:["foodie","scram"], kangaroo:["sporty","boing"], llama:["drama","llama-zing"], wolf:["grumpy","awoo"],
+  parrot:["pirate","squawk"], zebra:["sporty","stripes"], shark:["pirate","chomp"], lion:["mighty","ROAR"],
+  crocodile:["grumpy","snap snap"], eagle:["sporty","soar"], peacock:["drama","fabulous"], giraffe:["fancy","lofty"],
   dino:["mighty","dino-mite"], sdragon:["mighty","puff puff"], alien:["mystic","zorp"], robot:["smart","beep boop"],
-  ghost:["mystic","boo"], wizard:["mystic","abracadabra"], vampire:["mystic","bleh bleh"], genie:["mystic","poof"]
+  ghost:["mystic","boo"], wizard:["mystic","abracadabra"], vampire:["drama","mwahaha"], genie:["mystic","poof"]
 };
 const VOICES = {
+  shy:{
+    g:["Um... hi.","H-hello...","Oh! Hi there...","Hi... it's me.","Psst. Hello.","Hello (waves quietly)."],
+    o:["I'm in {p}... I hope that's OK, {cp}.","I was a bit scared, but I came to {p}!","Um, greetings from {p}, {c}.","I'm hiding behind a tree in {p}, {cp}.","There are lots of people in {p}. I'm very small.","I finally got brave and went to {p}!","I'm writing this very quietly from {p}.","So... {p}. I'm here. Wow, {cp}."],
+    r:["I hid at first, then I peeked. It was beautiful.","Someone said hello and I blushed, {cp}.","I was nervous, but it was worth it.","I said 'hi' to a stranger. Big step for me!","I watched quietly from a corner.","I felt very brave, {cp}.","I made one tiny friend. That's enough.","I was excited, but in a quiet way."],
+    c:["You're braver than you think.","It's OK to make mistakes. I make lots, {cp}.","Thank you for practising. It helps me travel.","Maybe... study a little today?","I'll be back soon... if that's OK.","You did great. I'm a bit shy to say it.","Don't be scared of grammar, {cp}.","Small steps are still steps."],
+    s:["Shyly yours,","Um, love,","Quietly,","Your shy friend,","Bye bye (waves),","Softly,"]},
+  foodie:{
+    g:["Yum, hello!","Hi, hungry friend!","Hello from the dinner table!","Bon appétit!","Hi! I'm eating.","Mmm, hello!"],
+    o:["I'm in {p} and I've already had two lunches, {cp}.","I came to {p} to taste everything!","Greetings from {p}, {c}! The food is amazing.","You worked hard, so I'm eating my way across {p}.","{p} smells delicious, {cp}.","I followed a nice smell and ended up in {p}.","Hello from {p}! My bag is full of snacks.","I'm in {p}, and my tummy is very happy, {cp}."],
+    r:["Then I had dessert. Twice.","I asked for the recipe, {cp}.","I gave it ten out of ten spoons.","My tummy says thank you!","I took more photos of food than of buildings.","I licked the plate. Don't tell anyone, {cp}.","I tried something new and loved it!","Then I needed a little snack."],
+    c:["Eat well and study well!","Words are like snacks: try a new one every day, {cp}.","I'll bring you something tasty.","Brain food: ten right answers a day!","Keep practising. I'll keep eating.","Save room for dessert, {cp}!","Learning is delicious. Well, almost.","See you at snack time!"],
+    s:["Yummy hugs,","Full and happy,","Your hungry friend,","Bon appétit,","Crumbs and love,","Burp, sorry. Love,"]},
+  pirate:{
+    g:["Ahoy, matey!","Ahoy there!","Avast, friend!","Yo ho ho!","Ahoy, captain!","Hello, me hearty!"],
+    o:["I sailed all the way to {p}, {cp}!","Land ho! I've reached {p}!","Greetings from {p}, {c}! The treasure hunt begins.","Your hard work filled my sails. Now I'm in {p}!","I dropped anchor in {p}, {cp}.","{p} is the finest port in the world!","Ahoy from {p}! I'm looking for treasure.","Me ship brought me to {p}, {cp}!"],
+    r:["I didn't find gold, but I found fun!","I marked it on my map with a big X, {cp}.","Best adventure on the seven seas!","I lost my hat in the wind. Again.","I danced a pirate jig, {cp}!","Shiver me timbers, it was grand!","The real treasure was the friends I made.","I shouted 'Arrr!' and everyone laughed."],
+    c:["Keep studying, matey! Words are treasure.","Don't walk the plank: do your homework, {cp}!","Every right answer is a gold coin!","Hoist the sails and practise today!","I'll bring back treasure for you.","Keep your English shipshape!","Fair winds and good grammar, {cp}!","See you on the next tide!"],
+    s:["Yo ho ho,","Your pirate pal,","Arrr,","Captain","Fair winds,","Ahoy for now,"]},
+  drama:{
+    g:["Darling, darling, DARLING!","Oh, my goodness!","Stop everything!","You will NOT believe this!","Hello, my audience!","Gasp! Hello!"],
+    o:["I'm in {p} and I'm SO emotional, {cp}!","{p}! The most beautiful place in the whole universe!","After a long, LONG journey, I'm in {p}, {c}.","I've arrived in {p}. Cue the music, {cp}!","{p} has changed my life. Again.","Picture this: me, in {p}, in the sunshine.","I'm in {p} and nothing will ever be the same, {cp}!","I cried when I saw {p}. Happy tears!"],
+    r:["It was the BEST moment of my life. So far.","I gave a little speech. Nobody asked, {cp}.","I fainted. Well, almost.","Everyone clapped. Probably for someone else.","I sang a song about it, {cp}.","I will never, ever forget it!","Then I struck a pose for the cameras.","Too much beauty! I need to sit down."],
+    c:["You are the star of your own show!","Practise your lines... I mean, your English, {cp}!","The show must go on: study today!","I'll tell you EVERYTHING when I'm back.","You're fabulous. Never forget it, {cp}.","Curtain down. See you soon!","Take a bow, you're doing brilliantly!","Ten right answers? Standing ovation!"],
+    s:["Dramatically yours,","Forever and ever,","Your star,","Bravo,","With all my heart,","The end. Love,"]},
+  chill:{
+    g:["Hey, dude!","Yo, what's up?","Hey hey, buddy.","Aloha!","Sup, friend?","Hey there, legend."],
+    o:["I'm chilling in {p}, {cp}.","Just floated into {p}. No rush.","Good vibes from {p}, {c}!","You did the work, so I'm relaxing in {p}. Thanks, {cp}.","{p} is super chill, dude.","Rolled into {p} today. Totally awesome.","Greetings from {p}. Life is good, {cp}.","Took the slow road to {p}. Worth it."],
+    r:["Total good vibes, {cp}.","I just went with the flow.","No stress, just sunshine.","That was rad, dude.","I sat back and enjoyed the view.","Everything was smooth, {cp}.","Ten out of ten vibes.","I made friends with everyone. Easy."],
+    c:["Stay cool and keep practising.","No stress, just a bit of English every day, {cp}.","Ride the wave, dude!","You've got this. Totally.","Keep calm and learn phrasal verbs.","Catch you later, {cp}!","Mistakes are cool. They help you learn.","Hang loose and do your homework!"],
+    s:["Peace out,","Stay chill,","Good vibes,","Later, dude,","Aloha,","Chillin',"]},
   peppy:{
     g:["Hiiii!","Hey hey hey!","Guess what?!","Hello, best friend!","OMG, hi!","Yoo-hoo!"],
     o:["I'm in {p} and it's AMAZING, {cp}!","Surprise! I packed my bag and flew to {p}!","You studied so hard that I got a holiday in {p}! Thank you, {cp}!","Hello from {p}! I can't stop jumping!","I'm writing this from {p}, {c}! Can you believe it?","Big news: I'm on holiday in {p}, {cp}!","{p} is even better than in the photos!","I made it to {p}! Woo-hoo!"],
@@ -1274,6 +1428,18 @@ const VOICES = {
     s:["Mysteriously yours,","Boo,","Magically,","From the other side,","Spookily,","Until next moon,"]}
 };
 const PC_LINES = {
+  barcelona:["I saw the Sagrada Família. They started building it in 1882!","The towers look like giant sandcastles.","I walked down La Rambla and saw human statues.","I ate patatas bravas. A bit spicy!","I sat on the colourful bench in Park Güell.","I swam in the Mediterranean Sea.","I learned to say 'bon dia' in Catalan.","I watched people build a human tower!"],
+  granada:["I visited the Alhambra, a palace on a hill.","The walls inside are covered in beautiful patterns.","I saw snowy mountains and palm trees on the same day!","Every drink came with free tapas. Amazing!","I walked through gardens full of fountains.","I watched the sunset from the San Nicolás viewpoint.","I got lost in the little white streets of the Albaicín.","I heard flamenco guitar in a cave."],
+  seville:["I climbed the Giralda tower. No stairs, just ramps!","It was SO hot. Like an oven!","I saw a flamenco show. The dancers were so fast!","Orange trees grow on every street.","I rode in a horse carriage past the cathedral.","I visited the Plaza de España. It's huge!","I ate gazpacho, a cold tomato soup.","I took a boat on the Guadalquivir river."],
+  madrid:["I saw the Puerta de Alcalá, a giant stone gate.","I rowed a boat in Retiro Park.","I ate churros with hot chocolate. Heaven!","I visited the Prado Museum. So many paintings!","I ate a squid sandwich in Plaza Mayor.","I stood on Kilometre Zero, the centre of Spain.","Dinner here is at ten o'clock at night!","I saw the Royal Palace. It has over 3,000 rooms!"],
+  tenerife:["I saw Mount Teide, the highest mountain in Spain.","Teide is a volcano! Don't worry, it's sleeping.","I took a cable car up the mountain.","The beach had black sand!","I saw whales and dolphins from a boat.","It's warm here even in winter.","At night, I saw millions of stars.","I ate wrinkly potatoes with spicy sauce."],
+  rio:["I saw the giant Christ the Redeemer statue.","I took a cable car up Sugarloaf Mountain.","I played football on Copacabana beach.","I danced samba in the street!","The statue's arms are 28 metres wide!","I drank fresh coconut water.","I saw tiny monkeys in the trees.","I said 'obrigado' to everyone."],
+  machu:["I saw Machu Picchu, an old Inca city in the mountains.","It's 2,430 metres high. I was out of breath!","A llama walked right past me!","The clouds were below me. So cool!","I walked on stone steps built hundreds of years ago.","I took a train through the jungle to get here.","The stone walls fit together with no cement!","I watched the sunrise over the ruins."],
+  moai:["I saw the moai, giant stone heads!","There are almost 1,000 moai on the island.","Some moai wear stone hats. Fancy!","The island is in the middle of the Pacific Ocean.","I sat next to a moai. It didn't talk much.","I swam at a beach with white sand and palm trees.","I watched the sunrise behind fifteen moai.","Nobody knows exactly how they moved them!"],
+  athens:["I climbed up to the Parthenon on the Acropolis.","It's almost 2,500 years old!","I counted the columns. There are lots!","I ate a gyros. Delicious!","The first Olympic Games were in Greece.","A friendly cat followed me everywhere.","I saw the guards. Their shoes have pompoms!","I said 'yassas' to say hello."],
+  amsterdam:["I saw tall, thin houses next to the canals.","There are more bikes than people here!","I took a boat trip on the canals.","I saw a field full of tulips.","I ate stroopwafels, waffles with caramel inside.","Some houses lean forward. It's on purpose!","I visited an old windmill.","I almost got hit by a bike. Twice!"],
+  santorini:["I saw white houses with blue roofs.","The sunset in Oia was the best ever.","The island is part of an old volcano!","I walked up hundreds of steps from the port.","I swam at a beach with red sand.","I ate fresh tomatoes and feta cheese.","Everything was white and blue, like the Greek flag.","I took about a thousand photos."],
+  chichen:["I saw the great pyramid of Chichén Itzá.","The Maya built it more than 1,000 years ago.","If you clap in front of it, the echo sounds like a bird!","The pyramid has 365 steps, one for every day of the year.","It was hot, so I swam in a cenote, a natural pool.","I ate tacos. Then more tacos.","I heard howler monkeys in the jungle.","I learned a few words in the Maya language."],
   paris:["I climbed the Eiffel Tower. So many steps!","I ate three croissants for breakfast.","I saw the Mona Lisa. She's smaller than I thought.","I took a boat ride on the river Seine.","A painter in Montmartre drew my portrait.","At night, the tower sparkled like a giant diamond.","I tried to say 'merci' with a French accent.","I sat in a café and watched people go by."],
   giza:["I saw the Great Pyramid. It's over 4,500 years old!","I rode a camel. It wasn't very polite.","I said hello to the Sphinx. It didn't answer.","The sand was so hot I danced across it.","I watched the sunset over the pyramids.","I went inside a pyramid. It was dark and narrow!","I found sand in my ears for days.","I tried to count the stones. I gave up at 312."],
   london:["I heard Big Ben ring. BONG!","It rained, then it was sunny, then it rained again.","I rode on a red double-decker bus, upstairs!","I waved at the guards. They didn't move at all.","I drank a cup of tea with milk. Very British.","I took the Tube and got a bit lost.","I walked across Tower Bridge.","I said 'cheers' to everyone."],
@@ -1292,15 +1458,50 @@ function writePostcard(placeId, petId, petName){
   const lines = shuffle(PC_LINES[placeId]).slice(0,2);
   let used = false;
   const fill = s => s.replace(/\{p\}/g, P.n).replace(/\{c\}/g, P.c).replace(/,? \{cp\}/g, m => {
-    if(used) return ""; used = true; return m.replace("{cp}", cp);
+    if(used) return ""; used = true; return m.replace("{cp}", `[[${cp}]]`);
   });
   const g = fill(pick(V.g)), o = fill(pick(V.o)), l1 = lines[0];
   let r = fill(pick(V.r));
   const l2 = lines[1], c = fill(pick(V.c));
-  if(!used) r = r.replace(/([.!?]+)$/, `, ${cp}$1`);
+  if(!used) r = r.replace(/([.!?]+)$/, `, [[${cp}]]$1`);
   return {g, body:`${o} ${l1} ${r} ${l2}`, c, s:pick(V.s), name:petName};
 }
 
+
+/* ── animal sounds: tap a card to turn it over, tap the speaker to hear it in English ── */
+const SOUNDS = {
+  cat:["Meow!","A cat meows."], dog:["Woof woof!","A dog barks."], rabbit:["Sniff sniff!","A rabbit sniffs."], hamster:["Squeak!","A hamster squeaks."],
+  turtle:["Hisss!","A turtle hisses."], chick:["Cheep cheep!","A chick cheeps."], fox:["Yip yip!","A fox yelps."], panda:["Baa-aa!","A panda bleats."],
+  owl:["Hoot hoot!","An owl hoots."], koala:["Grr-rumph!","A koala bellows."], otter:["Squeak squeak!","An otter squeaks."], sloth:["Eeeeee!","A sloth squeals."],
+  tiger:["Grrrr!","A tiger growls."], octopus:["Blub blub!","An octopus is silent!"], penguin:["Honk honk!","A penguin honks."], flamingo:["Honk!","A flamingo honks."],
+  hedgehog:["Snuffle snuffle!","A hedgehog snuffles."], dolphin:["Click click!","A dolphin clicks."], dragon:["Roooar!","A dragon roars."], unicorn:["Neigh!","A unicorn neighs."],
+  trex:["ROAR!","A T-Rex roars."], whale:["Ooooo-oooo!","A whale sings."], frog:["Ribbit!","A frog croaks."], pig:["Oink oink!","A pig grunts."],
+  mouse:["Eek eek!","A mouse squeaks."], duck:["Quack quack!","A duck quacks."], snail:["Shhh...","A snail is silent!"], bee:["Buzzzz!","A bee buzzes."],
+  raccoon:["Chitter chitter!","A raccoon chitters."], kangaroo:["Cluck cluck!","A kangaroo clucks."], llama:["Hmmmm!","A llama hums."], wolf:["Awoooo!","A wolf howls."],
+  parrot:["Squawk! Hello!","A parrot squawks."], zebra:["Bark bark!","A zebra barks. Really!"], shark:["Chomp!","A shark is silent!"], lion:["ROAR!","A lion roars."],
+  crocodile:["Snap snap!","A crocodile snaps."], eagle:["Screeech!","An eagle screeches."], peacock:["Ee-ow!","A peacock screams."], giraffe:["Hmmm!","A giraffe hums."],
+  dino:["Rumble rumble!","A dino rumbles."], sdragon:["Puff puff!","A baby dragon puffs."], alien:["Zorp zorp!","An alien zorps."], robot:["Beep boop!","A robot beeps."],
+  ghost:["Boooo!","A ghost boos."], wizard:["Abracadabra!","A wizard casts a spell."], vampire:["Bleh bleh!","A vampire says bleh."], genie:["Poof!","A genie appears."]
+};
+const SOUND_FILES = [];          // ids with a real recording in sounds/<id>.mp3
+let sndPlaying = null;
+/* the speaker only shows on pets you own or can afford */
+function spkHTML(x, open){
+  return open && SOUND_FILES.includes(x.id) ? `<button type="button" class="spk-mini" data-say="${x.id}" aria-label="Listen to the ${esc(x.n)}">🔊</button>` : "";
+}
+function bindSpk(){
+  $app.querySelectorAll("[data-say]").forEach(b=>b.onclick = e => {
+    e.stopPropagation(); playSound(b.dataset.say);
+    const w = b.closest(".pw"), old = w.querySelector(".say"); if(old) old.remove();
+    const t = SOUNDS[b.dataset.say]; if(!t) return;
+    const bub = document.createElement("span"); bub.className = "say"; bub.textContent = t[0]; w.appendChild(bub);
+    setTimeout(()=>bub.remove(), 1600);
+  });
+}
+function playSound(id){
+  if(sndPlaying){ sndPlaying.pause(); sndPlaying.currentTime = 0; }
+  sndPlaying = new Audio(`sounds/${id}.mp3`); sndPlaying.play().catch(()=>{});
+}
 /* open straight on the only exam / week when there's just one */
 render();
 
