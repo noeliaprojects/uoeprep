@@ -1107,10 +1107,25 @@ const POSTCARDS = [
   {id:"athens", n:"Athens", c:"Greece"},
   {id:"amsterdam", n:"Amsterdam", c:"Netherlands"},
   {id:"santorini", n:"Santorini", c:"Greece"},
-  {id:"chichen", n:"Chichén Itzá", c:"Mexico"}
+  {id:"chichen", n:"Chichén Itzá", c:"Mexico"},
+  {id:"salem", n:"Salem", c:"Massachusetts, USA"}
 ];
 function postcardSVG(id){
   const P = {
+  salem:`<defs><linearGradient id="pc-sl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b1f4a"/><stop offset="1" stop-color="#7a4f8c"/></linearGradient></defs>
+    <rect width="320" height="200" fill="url(#pc-sl)"/><circle cx="262" cy="42" r="22" fill="#fff2c4"/><circle cx="272" cy="34" r="19" fill="#33255a"/>
+    <g fill="#fff" opacity=".8"><circle cx="40" cy="24" r="1.4"/><circle cx="96" cy="40" r="1.2"/><circle cx="150" cy="18" r="1.5"/><circle cx="210" cy="30" r="1.1"/><circle cx="300" cy="80" r="1.2"/></g>
+    <path d="M196 60 q6 -6 12 0 q6 -6 12 0 q-6 -2 -12 4 q-6 -6 -12 -4Z M226 74 q4 -4 8 0 q4 -4 8 0 q-4 -1 -8 3 q-4 -4 -8 -3Z" fill="#1a1230"/>
+    <path d="M150 166 V96 L186 66 L222 96 V166Z" fill="#251a3d"/><path d="M142 98 L186 60 L230 98 L222 98 L186 68 L150 98Z" fill="#1a1230"/>
+    <rect x="200" y="58" width="10" height="22" fill="#251a3d"/>
+    <g fill="#ffc94a"><rect x="164" y="108" width="12" height="14"/><rect x="196" y="108" width="12" height="14"/><path d="M180 166 V142 Q186 134 192 142 V166Z"/><circle cx="186" cy="88" r="5"/></g>
+    <path d="M0 168 Q160 156 320 170 V200 H0Z" fill="#3d3354"/>
+    <g fill="#8e88a3">${[[30,150],[64,156],[250,152],[290,158]].map(([x,y])=>`<path d="M${x-9} ${y+16} V${y+6} Q${x-9} ${y-4} ${x} ${y-4} Q${x+9} ${y-4} ${x+9} ${y+6} V${y+16}Z"/>`).join("")}</g>
+    <g fill="#6b6582"><rect x="29" y="152" width="2" height="8"/><rect x="26" y="155" width="8" height="2"/></g>
+    <g fill="#e2742c"><ellipse cx="216" cy="176" rx="10" ry="8"/><ellipse cx="234" cy="180" rx="7" ry="6"/></g><g fill="#2a1a10"><path d="M211 174 l3 -3 l3 3Z M219 174 l3 -3 l3 3Z"/><rect x="212" y="178" width="8" height="2"/></g>
+    <g transform="translate(268 108)"><path d="M-8 26 L-10 58 M8 26 L10 58" stroke="#4a5a3a" stroke-width="7" stroke-linecap="round"/>
+      <rect x="-12" y="0" width="24" height="30" rx="4" fill="#5b4a7a"/><path d="M-12 8 L-34 8 M12 8 L-10 14" stroke="#8fbf6a" stroke-width="6" stroke-linecap="round"/>
+      <circle cx="0" cy="-10" r="12" fill="#8fbf6a"/><circle cx="-4" cy="-12" r="2.5" fill="#fff"/><circle cx="5" cy="-11" r="1.8" fill="#fff"/><path d="M-5 -3 l3 -2 l3 2 l3 -2" stroke="#2c3a20" stroke-width="1.6" fill="none"/></g>`,
   barcelona:`<defs><linearGradient id="pc-bc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc79a"/><stop offset="1" stop-color="#fff0dc"/></linearGradient></defs>
     <rect width="320" height="200" fill="url(#pc-bc)"/><circle cx="62" cy="50" r="20" fill="#fff6d0"/>
     <g fill="#c99460">${[[168,82,11],[196,46,13],[228,30,15],[260,44,13],[290,80,11]].map(([x,t,w])=>`<path d="M${x-w} 176 L${x-w*.55} ${t+22} Q${x} ${t-8} ${x+w*.55} ${t+22} L${x+w} 176Z"/>`).join("")}</g>
@@ -1285,7 +1300,7 @@ function postcardSVG(id){
   return `<svg class="scene-svg" viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${P[id]||""}</svg>`;
 }
 const PC_FLAG = {paris:"🇫🇷", giza:"🇪🇬", london:"🇬🇧", newyork:"🇺🇸", rome:"🇮🇹", agra:"🇮🇳", wall:"🇨🇳", fuji:"🇯🇵", sydney:"🇦🇺", pisa:"🇮🇹",
-  barcelona:"🇪🇸", granada:"🇪🇸", seville:"🇪🇸", madrid:"🇪🇸", tenerife:"🇪🇸", rio:"🇧🇷", machu:"🇵🇪", moai:"🇨🇱", athens:"🇬🇷", amsterdam:"🇳🇱", santorini:"🇬🇷", chichen:"🇲🇽"};
+  barcelona:"🇪🇸", granada:"🇪🇸", seville:"🇪🇸", madrid:"🇪🇸", tenerife:"🇪🇸", rio:"🇧🇷", machu:"🇵🇪", moai:"🇨🇱", athens:"🇬🇷", amsterdam:"🇳🇱", santorini:"🇬🇷", chichen:"🇲🇽", salem:"🇺🇸"};
 function postcardFront(id, emoji, small){
   const x = POSTCARDS.find(p=>p.id===id);
   return `<div class="scene${small?" small":""}">${postcardSVG(id)}${emoji?`<span class="scene-pet pc-pet" aria-hidden="true">${emoji}</span>`:""}
@@ -1428,6 +1443,7 @@ const VOICES = {
     s:["Mysteriously yours,","Boo,","Magically,","From the other side,","Spookily,","Until next moon,"]}
 };
 const PC_LINES = {
+  salem:["Salem is famous for its witches. I saw three on brooms!","A zombie asked me for directions. I ran!","Here it's Halloween all year round.","I visited a haunted house. Something said 'BOO'!","A black cat followed me through the graveyard.","I bought a tiny witch hat as a souvenir.","The zombie in the cemetery was very slow. Lucky me!","I carved a pumpkin with a scary face."],
   barcelona:["I saw the Sagrada Família. They started building it in 1882!","The towers look like giant sandcastles.","I walked down La Rambla and saw human statues.","I ate patatas bravas. A bit spicy!","I sat on the colourful bench in Park Güell.","I swam in the Mediterranean Sea.","I learned to say 'bon dia' in Catalan.","I watched people build a human tower!"],
   granada:["I visited the Alhambra, a palace on a hill.","The walls inside are covered in beautiful patterns.","I saw snowy mountains and palm trees on the same day!","Every drink came with free tapas. Amazing!","I walked through gardens full of fountains.","I watched the sunset from the San Nicolás viewpoint.","I got lost in the little white streets of the Albaicín.","I heard flamenco guitar in a cave."],
   seville:["I climbed the Giralda tower. No stairs, just ramps!","It was SO hot. Like an oven!","I saw a flamenco show. The dancers were so fast!","Orange trees grow on every street.","I rode in a horse carriage past the cathedral.","I visited the Plaza de España. It's huge!","I ate gazpacho, a cold tomato soup.","I took a boat on the Guadalquivir river."],
