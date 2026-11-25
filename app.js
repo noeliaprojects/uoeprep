@@ -1518,6 +1518,13 @@ function playSound(id){
   if(sndPlaying){ sndPlaying.pause(); sndPlaying.currentTime = 0; }
   sndPlaying = new Audio(`sounds/${id}.mp3`); sndPlaying.play().catch(()=>{});
 }
+/* teacher's test link: ?rasca-noelia gives 3 scratch cards (and a pet if there isn't one) */
+if(/[?&]rasca-noelia\b/.test(location.search)){
+  if(!state.active){ state.pets.cat = "Mochi"; state.active = "cat"; }
+  state.tickets = (state.tickets||0) + 3; save();
+  history.replaceState(null, "", location.pathname);
+  view = {name:"pet"};
+}
 /* open straight on the only exam / week when there's just one */
 render();
 
