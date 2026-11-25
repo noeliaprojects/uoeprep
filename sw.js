@@ -1,4 +1,4 @@
-const VERSION = "uoe-v25";
+const VERSION = "uoe-v26";
 const FILES = ["./","index.html","styles.css","data.js","app.js","manifest.webmanifest","icons/icon-192.png","icons/icon-512.png"];
 /* always ask the server (no-cache = check for a newer copy), so updates show up at once */
 self.addEventListener("install", e => {

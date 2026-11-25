@@ -144,7 +144,7 @@ function pet(){
   ${menu([
     {id:"gamesb", t:"Games", s:`play with ${a.name}`},
     {id:"shopb", t:"Shop", s:"pets & places"},
-    {id:"mine", t:"My pets", s:`${Object.keys(state.pets).length}`},
+    {id:"mine", t:"My pets & places", s:`${Object.keys(state.pets).length} · ${PLACES.filter(x=>state.places[x.id]).length}`},
     {id:"pcb", t:"My postcards", s:`${new Set((state.postcards||[]).map(c=>c.id)).size} / ${POSTCARDS.length}`}
   ]
    .concat(state.photos.length?[{id:"photosb", t:"My photos", s:`${state.photos.length}`}]:[]))}
@@ -197,12 +197,19 @@ function myPets(){
   const ids = Object.keys(state.pets);
   $app.innerHTML = `
   ${header()}
-  <div class="unit-head"><h2>My pets</h2></div>
-  <div class="pet-grid">${ids.map(id=>{ const x = petById(id); return `<div class="pw">
+  <div class="unit-head"><h2>My pets and places</h2></div>
+  <span class="label">Pets</span>
+  <div class="pet-grid" style="margin-top:8px">${ids.map(id=>{ const x = petById(id); return `<div class="pw">
     <button type="button" class="pet-card${id===state.active?" active":""}" data-pick="${id}"><span class="pe" aria-hidden="true">${x.e}</span>
-    <span class="t">${esc(state.pets[id])}</span><span class="s">${id===state.active?"With you now":"Choose"}</span></button>${spkHTML(x, true)}</div>`; }).join("")}</div>`;
+    <span class="t">${esc(state.pets[id])}</span><span class="s">${id===state.active?"With you now":"Choose"}</span></button>${spkHTML(x, true)}</div>`; }).join("")}</div>
+  <span class="label" style="display:block;margin-top:26px">Places</span>
+  <div class="place-grid" style="margin-top:8px">${PLACES.filter(x=>state.places[x.id]).map(x=>{ const here = state.place===x.id, a = activePet();
+    return `<button type="button" class="place-card${here?" here":""}" data-live="${x.id}">${sceneHTML(x.id, here && a ? a.pet.e : "", "small")}
+      <span class="t">${x.n}</span><span class="s">${here?"You live here":"Move here"}</span></button>`; }).join("")}</div>
+  <p class="note" style="margin-top:16px">Buy more pets and places in the Shop.</p>`;
   bindBack({name:"pet"}); bindSpk();
   $app.querySelectorAll("[data-pick]").forEach(b=>b.onclick=()=>{ state.active = b.dataset.pick; save(); go({name:"pet"}); });
+  $app.querySelectorAll("[data-live]").forEach(b=>b.onclick=()=>{ state.place = b.dataset.live; save(); go({name:"myPets"}); });
 }
 /* every phrasal verb, collocation and fixed phrase from the published classes */
 function petPool(){
@@ -1332,7 +1339,7 @@ function postcards(){
   const have = state.postcards || [], seen = new Set(have.map(c=>c.id));
   $app.innerHTML = `${header()}
   <div class="unit-head"><span class="label">${seen.size} / ${POSTCARDS.length} places</span><h2>My postcards</h2></div>
-  <p class="note">Your pets travel the world and write to you. Win postcards with scratch cards.</p>
+  <p class="note">Your pets travel the world and write to you. Get ${GOAL} right answers a day: every ${TICKET_EVERY} days in a row you win a scratch card, and a scratch card can bring a postcard.</p>
   <div class="pc-grid">${have.map((c,i)=>({c,i})).reverse().map(({c,i})=>{ const pet = petById(c.pet);
       return `<button type="button" class="pc-item" data-i="${i}">${postcardFront(c.id, pet?pet.e:"", true)}<span class="pc-cap">From ${esc(c.m.name)}</span></button>`; }).join("")}
     ${POSTCARDS.filter(p=>!seen.has(p.id)).map(()=>`<div class="pc-item locked"><div class="scene small"><span class="pc-q">?</span></div><span class="pc-cap">Not yet</span></div>`).join("")}</div>`;
