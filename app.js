@@ -1533,6 +1533,12 @@ if(/[?&]rasca-noelia\b/.test(location.search)){
 render();
 
 if("serviceWorker" in navigator && location.protocol==="https:" && /github\.io$/.test(location.hostname)){
-  try{ navigator.serviceWorker.register("sw.js").catch(()=>{}); }catch(e){}
+  try{
+    const had = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.register("sw.js", {updateViaCache:"none"}).then(r=>r.update()).catch(()=>{});
+    /* when a new version takes over, reload once so it shows straight away */
+    let done = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => { if(had && !done){ done = true; location.reload(); } });
+  }catch(e){}
 }
 })();

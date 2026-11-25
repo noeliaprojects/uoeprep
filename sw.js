@@ -1,17 +1,20 @@
-const VERSION = "uoe-v24";
+const VERSION = "uoe-v25";
 const FILES = ["./","index.html","styles.css","data.js","app.js","manifest.webmanifest","icons/icon-192.png","icons/icon-512.png"];
-self.addEventListener("install", e => { e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES))); self.skipWaiting(); });
+/* always ask the server (no-cache = check for a newer copy), so updates show up at once */
+self.addEventListener("install", e => {
+  e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES.map(f => new Request(f, {cache:"reload"})))));
+  self.skipWaiting();
+});
 self.addEventListener("activate", e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== VERSION).map(k => caches.delete(k)))));
   self.clients.claim();
 });
 self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
+  const same = new URL(e.request.url).origin === location.origin;
   e.respondWith(
-    fetch(e.request).then(r => {
-      if (r.ok && new URL(e.request.url).origin === location.origin) {
-        const copy = r.clone(); caches.open(VERSION).then(c => c.put(e.request, copy));
-      }
+    (same ? fetch(e.request.url, {cache:"no-cache"}) : fetch(e.request)).then(r => {
+      if (r.ok && same) { const copy = r.clone(); caches.open(VERSION).then(c => c.put(e.request, copy)); }
       return r;
     }).catch(() => caches.match(e.request))
   );
