@@ -457,3 +457,6 @@ h1,h2,h3{font-family:var(--f-display);line-height:1.15;text-wrap:balance;margin:
 @keyframes fxUp{0%{opacity:0;transform:translate(0,10px) scale(.6)}20%{opacity:1}100%{opacity:0;transform:translate(var(--dx),-90px) scale(1.1)}}
 .pet-say{position:absolute;top:12%;left:50%;transform:translateX(-50%);background:#fff;color:#c2410c;font-family:var(--f-display);font-weight:700;font-size:16px;padding:5px 12px;border-radius:14px;box-shadow:0 3px 10px rgba(0,0,0,.15);white-space:nowrap;pointer-events:none;animation:sayUp 1.6s ease-out forwards}
 @media (prefers-reduced-motion:reduce){.scene-pet.trick{animation:none}.pet-fx{display:none}}
+.scratch-none{display:grid;gap:4px;border:1.5px dashed var(--rule);border-radius:var(--r);padding:14px 16px;margin:4px 0 18px;background:var(--sheet)}
+.scratch-none .t{font-family:var(--f-display);font-size:18px;font-weight:700;color:var(--pencil)}
+.scratch-none .s{font-size:15px;color:var(--ink)}

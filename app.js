@@ -1365,16 +1365,32 @@ function bindFlips(){
     f.onclick = t; f.onkeydown = e => { if(e.key==="Enter"||e.key===" "){ e.preventDefault(); t(); } };
   });
 }
+/* scratch button, or why there isn't one yet */
+function scratchBox(){
+  if(state.tickets>0) return `<button type="button" class="menu-btn scratch-btn" id="scr"><span class="t">🎟️ Scratch card</span><span class="s">${state.tickets} waiting</span><span class="arr" aria-hidden="true">→</span></button>`;
+  const today = todayCount(), s = streak(), plural = (n,w) => `${n} ${w}${n===1?"":"s"}`;
+  let why;
+  if(today < GOAL){
+    const after = (s+1) % TICKET_EVERY, rest = after===0 ? 0 : TICKET_EVERY - after;
+    why = rest===0 ? `Get <b>${plural(GOAL-today,"more right answer")}</b> today and you win one!`
+      : `Get <b>${plural(GOAL-today,"more right answer")}</b> today, then <b>${plural(rest,"more day")}</b> in a row.`;
+  } else {
+    const rest = TICKET_EVERY - (s % TICKET_EVERY);
+    why = `Done for today! Come back for <b>${plural(rest,"more day")}</b> in a row.`;
+  }
+  return `<div class="scratch-none"><span class="t">🎟️ No scratch card yet</span><span class="s">${why}</span></div>`;
+}
 function postcards(){
   const have = state.postcards || [], seen = new Set(have.map(c=>c.id));
   $app.innerHTML = `${header()}
   <div class="unit-head"><span class="label">${seen.size} / ${POSTCARDS.length} places</span><h2>My postcards</h2></div>
-  <p class="note">Your pets travel the world and write to you. Get ${GOAL} right answers a day: every ${TICKET_EVERY} days in a row you win a scratch card, and a scratch card can bring a postcard.</p>
+  ${scratchBox()}
   <div class="pc-grid">${have.map((c,i)=>({c,i})).reverse().map(({c,i})=>{ const pet = petById(c.pet);
       return `<button type="button" class="pc-item" data-i="${i}">${postcardFront(c.id, pet?pet.e:"", true)}<span class="pc-cap">From ${esc(c.m.name)}</span></button>`; }).join("")}
     ${POSTCARDS.filter(p=>!seen.has(p.id)).map(()=>`<div class="pc-item locked"><div class="scene small"><span class="pc-q">?</span></div><span class="pc-cap">Not yet</span></div>`).join("")}</div>`;
   bindBack({name:"pet"});
   $app.querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>go({name:"postcardView", i:+b.dataset.i}));
+  const sc = document.getElementById("scr"); if(sc) sc.onclick=()=>go({name:"scratch"});
 }
 function postcardView(){
   const c = (state.postcards||[])[view.i]; if(!c){ go({name:"postcards"}); return; }
