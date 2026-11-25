@@ -5,7 +5,7 @@ const STORE = "uoe:v3";
 const MIXED_SIZE = 20;
 const VOCAB_SIZE = 24;
 
-let state = {best:{}, coins:0, pets:{}, active:null, cards:{}, lastTest:{}, places:{garden:true}, place:"garden", days:{}, tickets:0, lastTicket:null, pending:null, photos:[], gc:{d:"",n:0}, best60:0};
+let state = {best:{}, coins:0, pets:{}, active:null, cards:{}, lastTest:{}, places:{garden:true}, place:"garden", days:{}, tickets:0, lastTicket:null, pending:null, photos:[], postcards:[], gc:{d:"",n:0}, best60:0};
 try{ const raw = localStorage.getItem(STORE); if(raw) state = Object.assign(state, JSON.parse(raw)); }catch(e){}
 function save(){ try{ localStorage.setItem(STORE, JSON.stringify(state)); }catch(e){} }
 
@@ -71,7 +71,7 @@ function exHTML(ex){ return esc(ex).replace(/\{([^}]+)\}/, "<b>$1</b>"); }
 let view = {name:"exams"};
 function go(v){ view = v; render(); window.scrollTo(0,0); }
 function render(){
-  ({exams, weeks, week:weekView, grammar, explainList, explain, exerciseList, vocab, practice, result, pet, shop, myPets, flash, study, ftest, places, games, wsearch, hangman, anagram, memory, timer, scratch, photos})[view.name]();
+  ({exams, weeks, week:weekView, grammar, explainList, explain, exerciseList, vocab, practice, result, pet, shop, myPets, flash, study, ftest, places, games, wsearch, hangman, anagram, memory, timer, scratch, photos, postcards, postcardView})[view.name]();
 }
 function header(backTo, crumb){
   return `<div class="top"><button type="button" class="back" id="back">← Back</button>${crumb?`<span class="label crumb">${esc(crumb)}</span>`:""}</div>`;
@@ -148,7 +148,8 @@ function pet(){
     {id:"shopb", t:"Shop", s:"pets"},
     {id:"placesb", t:"Places", s:"where your pet lives"},
     {id:"mine", t:"My pets", s:`${Object.keys(state.pets).length}`}
-  ].concat(state.photos.length?[{id:"photosb", t:"My photos", s:`${state.photos.length}`}]:[]))}
+  ].concat((state.postcards||[]).length?[{id:"pcb", t:"My postcards", s:`${new Set(state.postcards.map(c=>c.id)).size} / ${POSTCARDS.length}`}]:[])
+   .concat(state.photos.length?[{id:"photosb", t:"My photos", s:`${state.photos.length}`}]:[]))}
   <p class="note" style="margin-top:20px">Get ${GOAL} answers right first time every day. Every ${TICKET_EVERY} days in a row, you win a scratch card.</p>`;
   bindBack({name:"exams"});
   if(view.rename){
@@ -165,6 +166,7 @@ function pet(){
   document.getElementById("placesb").onclick=()=>go({name:"places"});
   const sc = document.getElementById("scr"); if(sc) sc.onclick=()=>go({name:"scratch"});
   const ph = document.getElementById("photosb"); if(ph) ph.onclick=()=>go({name:"photos"});
+  const pcb = document.getElementById("pcb"); if(pcb) pcb.onclick=()=>go({name:"postcards"});
 }
 function shop(){
   $app.innerHTML = `
@@ -742,12 +744,18 @@ function rollPrize(){
   const notOwned = PLACES.filter(p=>!state.places[p.id] && p.p<=250);
   const r = Math.random();
   if(PRIZE_PHOTOS.length && r < 0.30) return {t:"photo", src:PRIZE_PHOTOS[Math.floor(Math.random()*PRIZE_PHOTOS.length)]};
-  if(notOwned.length && r < 0.42) return {t:"place", id:notOwned[Math.floor(Math.random()*notOwned.length)].id};
+  const a = activePet(), seen = new Set((state.postcards||[]).map(c=>c.id)), fresh = POSTCARDS.filter(p=>!seen.has(p.id));
+  if(a && r < (fresh.length ? 0.70 : 0.55)){
+    const id = pick(fresh.length ? fresh : POSTCARDS).id;
+    return {t:"postcard", id, pet:a.pet.id, m:writePostcard(id, a.pet.id, a.name)};
+  }
+  if(notOwned.length && r < 0.82) return {t:"place", id:notOwned[Math.floor(Math.random()*notOwned.length)].id};
   const c = Math.random();
   return {t:"coins", n: c<0.55 ? 10 : c<0.85 ? 25 : 50};
 }
 function prizeHTML(p){
   if(p.t==="coins") return `<div class="prize"><div class="prize-big">🪙</div><b>${p.n} coins</b></div>`;
+  if(p.t==="postcard"){ const pet = petById(p.pet); return `<div class="prize prize-pc">${postcardFront(p.id, pet?pet.e:"")}</div>`; }
   if(p.t==="place"){ const x = PLACES.find(q=>q.id===p.id); return `<div class="prize">${sceneHTML(p.id,"","small")}<b>A new place: ${x.n}</b></div>`; }
   return `<div class="prize prize-photo"><img src="${esc(p.src)}" alt="Your prize photo"></div>`;
 }
@@ -755,6 +763,7 @@ function claimPrize(p){
   if(p.t==="coins") state.coins += p.n;
   if(p.t==="place") state.places[p.id] = true;
   if(p.t==="photo" && !state.photos.includes(p.src)) state.photos.push(p.src);
+  if(p.t==="postcard"){ state.postcards = state.postcards || []; state.postcards.push({id:p.id, pet:p.pet, m:p.m, d:dayKey()}); }
   state.tickets = Math.max(0, (state.tickets||0) - 1);
   state.pending = null; save();
 }
@@ -765,14 +774,15 @@ function scratch(){
   $app.innerHTML = `
   <div class="top"><button type="button" class="back" id="back">← Back</button>${coinBadge()}</div>
   <div class="unit-head"><h2>Scratch card</h2></div>
-  <p class="note">${view.done ? "It's yours!" : "Scratch the silver part with your finger."}</p>
-  <div class="scratch-box" id="sbox">
+  <p class="note">${view.done ? (p.t==="postcard" ? `${esc(p.m.name)} sent you a postcard! Tap it to read the message.` : "It's yours!") : "Scratch the silver part with your finger."}</p>
+  ${view.done && p.t==="postcard" ? postcardFlip(p) : `<div class="scratch-box" id="sbox">
     ${prizeHTML(p)}
     ${view.done ? "" : `<canvas id="scv" aria-label="Scratch area"></canvas>`}
-  </div>
+  </div>`}
   <div class="actions">${view.done ? (state.tickets>0 ? `<button type="button" class="btn amber-btn" id="next">Next card (${state.tickets})</button>` : `<button type="button" class="btn" id="fin">Done</button>`) : ""}</div>`;
   bindBack({name:"pet"});
   if(view.done){
+    bindFlips();
     const n = document.getElementById("next"); if(n) n.onclick = () => go({name:"scratch"});
     const f = document.getElementById("fin"); if(f) f.onclick = () => go({name:"pet"});
     return;
@@ -1055,6 +1065,240 @@ function installHTML(){
 function bindInstall(){
   const b = document.getElementById("inst");
   if(b) b.onclick = async () => { if(!installEvt) return; installEvt.prompt(); try{ await installEvt.userChoice; }catch(e){} installEvt = null; render(); };
+}
+
+
+/* ── postcards: the pet travels to famous places (drawn, same look on every phone) ── */
+const POSTCARDS = [
+  {id:"paris", n:"Paris", c:"France"},
+  {id:"giza", n:"Giza", c:"Egypt"},
+  {id:"london", n:"London", c:"United Kingdom"},
+  {id:"newyork", n:"New York", c:"USA"},
+  {id:"rome", n:"Rome", c:"Italy"},
+  {id:"agra", n:"Agra", c:"India"},
+  {id:"wall", n:"The Great Wall", c:"China"},
+  {id:"fuji", n:"Mount Fuji", c:"Japan"},
+  {id:"sydney", n:"Sydney", c:"Australia"},
+  {id:"pisa", n:"Pisa", c:"Italy"}
+];
+function postcardSVG(id){
+  const P = {
+  paris:`<defs><linearGradient id="pc-p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb38a"/><stop offset="1" stop-color="#ffe6cc"/></linearGradient></defs>
+    <rect width="320" height="200" fill="url(#pc-p)"/><circle cx="110" cy="70" r="24" fill="#fff3c4" opacity=".9"/>
+    <path d="M0 172 Q160 160 320 172 V200 H0Z" fill="#8cc07a"/>
+    <g fill="#5b4636"><path d="M232 26 L236 26 L238 62 L246 104 L256 142 L276 182 L260 182 Q234 150 210 182 L194 182 L214 142 L224 104 L230 62Z"/>
+    <rect x="219" y="100" width="30" height="6" rx="2"/><rect x="208" y="138" width="52" height="7" rx="2"/><rect x="233" y="14" width="2" height="14"/></g>
+    <g stroke="#ffe6cc" stroke-width="1.2" opacity=".55"><path d="M227 70 L241 92 M241 70 L227 92 M222 110 L246 134 M246 110 L222 134"/></g>`,
+  giza:`<defs><linearGradient id="pc-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6c85f"/><stop offset="1" stop-color="#fdf0c8"/></linearGradient></defs>
+    <rect width="320" height="200" fill="url(#pc-g)"/><circle cx="90" cy="54" r="22" fill="#fff6d6"/>
+    <path d="M150 172 L214 84 L280 172Z" fill="#e2b468"/><path d="M214 84 L280 172 L236 172Z" fill="#c8954a"/>
+    <path d="M250 172 L290 118 L330 172Z" fill="#dcaa5e"/><path d="M290 118 L330 172 L304 172Z" fill="#c08a44"/>
+    <path d="M118 172 L146 134 L176 172Z" fill="#e6bb72"/><path d="M146 134 L176 172 L158 172Z" fill="#cc9a50"/>
+    <path d="M0 168 Q160 158 320 170 V200 H0Z" fill="#e9c98a"/>`,
+  london:`<defs><linearGradient id="pc-l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9c6e3"/><stop offset="1" stop-color="#e4edf6"/></linearGradient></defs>
+    <rect width="320" height="200" fill="url(#pc-l)"/><ellipse cx="80" cy="44" rx="34" ry="10" fill="#fff" opacity=".85"/>
+    <rect x="150" y="118" width="80" height="60" fill="#c9a66b"/><g fill="#a8854d"><rect x="158" y="128" width="6" height="16"/><rect x="172" y="128" width="6" height="16"/><rect x="186" y="128" width="6" height="16"/><rect x="200" y="128" width="6" height="16"/><rect x="214" y="128" width="6" height="16"/></g>
+    <rect x="228" y="60" width="34" height="118" fill="#d4b06f"/><rect x="226" y="66" width="38" height="44" fill="#c9a160"/>
+    <circle cx="245" cy="88" r="14" fill="#fffbe9" stroke="#7a5a2a" stroke-width="2"/><path d="M245 88 L245 79 M245 88 L252 92" stroke="#3b2a12" stroke-width="2" stroke-linecap="round"/>
+    <path d="M226 60 L245 22 L264 60Z" fill="#5d6b74"/><rect x="243" y="12" width="4" height="12" fill="#5d6b74"/>
+    <g fill="#b89150"><rect x="234" y="118" width="5" height="14"/><rect x="251" y="118" width="5" height="14"/><rect x="234" y="142" width="5" height="14"/><rect x="251" y="142" width="5" height="14"/></g>
+    <rect y="176" width="320" height="24" fill="#5f7d95"/><path d="M0 184 q20 -4 40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0" stroke="#9fb9cc" stroke-width="2" fill="none"/>`,
+  newyork:`<defs><linearGradient id="pc-n" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cc3ea"/><stop offset="1" stop-color="#d8eefa"/></linearGradient></defs>
+    <rect width="320" height="200" fill="url(#pc-n)"/>
+    <g fill="#9fb4c6"><rect x="10" y="120" width="18" height="50"/><rect x="32" y="104" width="14" height="66"/><rect x="50" y="126" width="20" height="44"/><rect x="74" y="96" width="12" height="74"/><rect x="78" y="86" width="4" height="12"/></g>
+    <rect y="160" width="320" height="40" fill="#3b86b8"/>
+    <path d="M206 170 L214 132 L262 132 L270 170Z" fill="#a98f6d"/><rect x="218" y="122" width="40" height="12" fill="#bba37f"/>
+    <path d="M224 122 L230 70 Q238 60 246 70 L252 122Z" fill="#6fb39c"/>
+    <circle cx="238" cy="62" r="9" fill="#78bda6"/>
+    <g stroke="#6fb39c" stroke-width="3" stroke-linecap="round"><path d="M238 52 L238 44 M232 54 L227 47 M244 54 L249 47 M229 58 L222 55 M247 58 L254 55"/></g>
+    <path d="M246 80 L262 40" stroke="#6fb39c" stroke-width="7" stroke-linecap="round"/>
+    <path d="M258 40 L266 40 L264 34 Q262 26 262 22 Q258 28 258 34Z" fill="#f7b733"/><path d="M261 37 Q259 31 262 26 Q264 32 263 37Z" fill="#fff1a8"/>
+    <rect x="224" y="86" width="8" height="18" rx="3" fill="#5ea58c" transform="rotate(-18 228 95)"/>`,
+  rome:`<defs><linearGradient id="pc-r" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8ed0f0"/><stop offset="1" stop-color="#e5f5fc"/></linearGradient></defs>
+    <rect width="320" height="200" fill="url(#pc-r)"/><circle cx="70" cy="46" r="18" fill="#ffd65c"/>
+    <path d="M140 172 L140 86 Q226 66 312 86 L312 108 L290 108 L290 128 L312 128 L312 172Z" fill="#dca86b"/>
+    <path d="M140 86 Q226 66 312 86 L312 92 Q226 74 140 92Z" fill="#c8925a"/>
+    <g fill="#9a6a3c">${Array.from({length:8},(_,i)=>`<rect x="${150+i*20}" y="98" width="10" height="16" rx="5"/>`).join("")}
+    ${Array.from({length:8},(_,i)=>`<rect x="${150+i*20}" y="122" width="10" height="18" rx="5"/>`).join("")}
+    ${Array.from({length:8},(_,i)=>`<rect x="${150+i*20}" y="148" width="10" height="20" rx="5"/>`).join("")}</g>
+    <path d="M0 170 Q160 162 320 172 V200 H0Z" fill="#c9b48e"/>`,
+  agra:`<defs><linearGradient id="pc-a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c7b3e6"/><stop offset="1" stop-color="#f6e7f0"/></linearGradient></defs>
+    <rect width="320" height="200" fill="url(#pc-a)"/>
+    <g fill="#fbf8f3"><rect x="150" y="104" width="132" height="54"/><path d="M178 104 Q216 34 254 104Z"/><rect x="214" y="44" width="4" height="12"/>
+    <path d="M160 104 Q170 88 180 104Z"/><path d="M252 104 Q262 88 272 104Z"/>
+    <rect x="140" y="80" width="6" height="78"/><rect x="286" y="80" width="6" height="78"/><circle cx="143" cy="80" r="5"/><circle cx="289" cy="80" r="5"/></g>
+    <g fill="#e4dbcf"><rect x="202" y="118" width="28" height="40" rx="14"/><rect x="164" y="124" width="16" height="24" rx="8"/><rect x="252" y="124" width="16" height="24" rx="8"/></g>
+    <rect y="158" width="320" height="42" fill="#9cc58a"/><rect x="196" y="160" width="40" height="40" fill="#8cc4e6"/>
+    <path d="M206 166 Q216 180 226 166" stroke="#fbf8f3" stroke-width="2" fill="none" opacity=".7"/>`,
+  wall:`<defs><linearGradient id="pc-w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b8dff0"/><stop offset="1" stop-color="#eef8fb"/></linearGradient></defs>
+    <rect width="320" height="200" fill="url(#pc-w)"/>
+    <path d="M0 130 L60 70 L120 120 L190 50 L260 118 L320 80 V200 H0Z" fill="#7fae74"/><path d="M0 160 L80 110 L150 150 L230 96 L320 140 V200 H0Z" fill="#5f9658"/>
+    <path d="M0 168 L70 128 L120 150 L190 104 L250 132 L320 100" stroke="#c4a67c" stroke-width="12" fill="none" stroke-linejoin="round"/>
+    <path d="M0 162 L70 122 L120 144 L190 98 L250 126 L320 94" stroke="#9c8058" stroke-width="3" stroke-dasharray="5 4" fill="none"/>
+    <g fill="#b39467"><rect x="62" y="108" width="18" height="22"/><rect x="182" y="82" width="18" height="24"/><rect x="242" y="112" width="16" height="22"/></g>
+    <g fill="#8a6f48"><rect x="68" y="116" width="6" height="8"/><rect x="188" y="90" width="6" height="8"/><rect x="247" y="120" width="6" height="7"/></g>`,
+  fuji:`<defs><linearGradient id="pc-f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fd0f0"/><stop offset="1" stop-color="#eaf6fc"/></linearGradient></defs>
+    <rect width="320" height="200" fill="url(#pc-f)"/><circle cx="66" cy="44" r="18" fill="#ff7a59"/>
+    <path d="M110 170 L210 50 L310 170Z" fill="#6f8fb4"/><path d="M210 50 L180 86 L194 80 L204 90 L216 80 L228 88 L240 86Z" fill="#fff"/>
+    <rect y="160" width="320" height="40" fill="#8cc27a"/>
+    <g fill="#d6453d"><rect x="260" y="112" width="6" height="56"/><rect x="292" y="112" width="6" height="56"/><rect x="250" y="104" width="58" height="7" rx="2"/><rect x="256" y="120" width="46" height="5"/></g>
+    <g fill="#ffb3c7"><circle cx="30" cy="118" r="10"/><circle cx="46" cy="108" r="12"/><circle cx="20" cy="104" r="9"/><circle cx="40" cy="126" r="9"/></g><rect x="33" y="124" width="4" height="40" fill="#7a5238"/>`,
+  sydney:`<defs><linearGradient id="pc-s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5fb8e8"/><stop offset="1" stop-color="#d6eef9"/></linearGradient></defs>
+    <rect width="320" height="200" fill="url(#pc-s)"/>
+    <path d="M0 120 Q70 60 140 120" stroke="#6b7a86" stroke-width="6" fill="none"/><path d="M0 120 H140" stroke="#6b7a86" stroke-width="4"/>
+    <g stroke="#6b7a86" stroke-width="2"><path d="M30 98 V120 M50 86 V120 M70 82 V120 M90 86 V120 M110 98 V120"/></g>
+    <rect y="146" width="320" height="54" fill="#2f7fb5"/>
+    <rect x="150" y="136" width="160" height="14" fill="#e8d9bf"/>
+    <g fill="#fdfcf8" stroke="#d8d2c4" stroke-width="1.5"><path d="M160 138 Q170 92 214 78 Q196 104 200 138Z"/><path d="M196 138 Q206 90 250 74 Q232 104 236 138Z"/><path d="M232 138 Q244 96 286 88 Q270 110 274 138Z"/><path d="M270 138 Q280 112 306 108 Q296 122 300 138Z"/></g>
+    <path d="M0 160 q20 -4 40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0" stroke="#8cc7e8" stroke-width="2" fill="none"/>`,
+  pisa:`<defs><linearGradient id="pc-i" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#93cdee"/><stop offset="1" stop-color="#e9f6fc"/></linearGradient></defs>
+    <rect width="320" height="200" fill="url(#pc-i)"/><ellipse cx="80" cy="50" rx="30" ry="9" fill="#fff" opacity=".9"/>
+    <path d="M0 166 Q160 156 320 166 V200 H0Z" fill="#8cc07a"/>
+    <g transform="rotate(8 236 168)">
+      <rect x="212" y="40" width="48" height="128" fill="#f3ede1"/><rect x="216" y="28" width="40" height="14" fill="#ece4d4"/>
+      <g fill="#cfc4ae">${Array.from({length:6},(_,r)=>Array.from({length:4},(_,c)=>`<rect x="${217+c*11}" y="${48+r*20}" width="6" height="12" rx="3"/>`).join("")).join("")}</g>
+      <g stroke="#ddd3bf" stroke-width="2">${Array.from({length:6},(_,r)=>`<path d="M212 ${64+r*20} H260"/>`).join("")}</g>
+    </g>`
+  };
+  return `<svg class="scene-svg" viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${P[id]||""}</svg>`;
+}
+const PC_FLAG = {paris:"🇫🇷", giza:"🇪🇬", london:"🇬🇧", newyork:"🇺🇸", rome:"🇮🇹", agra:"🇮🇳", wall:"🇨🇳", fuji:"🇯🇵", sydney:"🇦🇺", pisa:"🇮🇹"};
+function postcardFront(id, emoji, small){
+  const x = POSTCARDS.find(p=>p.id===id);
+  return `<div class="scene${small?" small":""}">${postcardSVG(id)}${emoji?`<span class="scene-pet pc-pet" aria-hidden="true">${emoji}</span>`:""}
+    <span class="pc-hello">Hello from ${esc(x.n)}!</span></div>`;
+}
+/* a postcard that turns over when tapped: picture on the front, the pet's message on the back */
+function postcardFlip(card){
+  const pet = petById(card.pet), m = card.m, x = POSTCARDS.find(p=>p.id===card.id);
+  return `<div class="pc-flip" role="button" tabindex="0" aria-label="Turn the postcard over"><div class="pc-in">
+    <div class="pc-face pc-front">${postcardFront(card.id, pet?pet.e:"")}<span class="pc-tap">Tap to turn over ↻</span></div>
+    <div class="pc-face pc-back">
+      <div class="pc-stamp" aria-hidden="true"><span>${PC_FLAG[card.id]||"✉️"}</span><i>${esc(x.c)}</i></div>
+      <div class="pc-msg"><p class="pc-g">${esc(m.g)}</p><p>${esc(m.body)}</p><p>${esc(m.c)}</p>
+      <p class="pc-sign">${esc(m.s)}<br><b>${esc(m.name)}</b> ${pet?pet.e:""}</p></div>
+    </div></div></div>`;
+}
+function bindFlips(){
+  $app.querySelectorAll(".pc-flip").forEach(f=>{
+    const t = () => f.classList.toggle("on");
+    f.onclick = t; f.onkeydown = e => { if(e.key==="Enter"||e.key===" "){ e.preventDefault(); t(); } };
+  });
+}
+function postcards(){
+  const have = state.postcards || [], seen = new Set(have.map(c=>c.id));
+  $app.innerHTML = `${header()}
+  <div class="unit-head"><span class="label">${seen.size} / ${POSTCARDS.length} places</span><h2>My postcards</h2></div>
+  <p class="note">Your pets travel the world and write to you. Win postcards with scratch cards.</p>
+  <div class="pc-grid">${have.map((c,i)=>({c,i})).reverse().map(({c,i})=>{ const pet = petById(c.pet);
+      return `<button type="button" class="pc-item" data-i="${i}">${postcardFront(c.id, pet?pet.e:"", true)}<span class="pc-cap">From ${esc(c.m.name)}</span></button>`; }).join("")}
+    ${POSTCARDS.filter(p=>!seen.has(p.id)).map(()=>`<div class="pc-item locked"><div class="scene small"><span class="pc-q">?</span></div><span class="pc-cap">Not yet</span></div>`).join("")}</div>`;
+  bindBack({name:"pet"});
+  $app.querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>go({name:"postcardView", i:+b.dataset.i}));
+}
+function postcardView(){
+  const c = (state.postcards||[])[view.i]; if(!c){ go({name:"postcards"}); return; }
+  $app.innerHTML = `${header()}${postcardFlip(c)}`;
+  bindBack({name:"postcards"}); bindFlips();
+}
+
+/* ── postcard messages: every pet has its own voice and catchphrase (Animal Crossing style) ── */
+const PET_VOICE = {
+  cat:["grumpy","meh-ow"], dog:["sporty","woof woof"], rabbit:["sweet","hop hop"], hamster:["lazy","nom nom"],
+  turtle:["lazy","slowpoke"], chick:["peppy","cheep cheep"], fox:["fancy","foxy"], panda:["lazy","bamboo"],
+  owl:["smart","hoot hoot"], koala:["lazy","gumleaf"], otter:["sweet","splish"], sloth:["lazy","sloooow"],
+  tiger:["sporty","rawr"], octopus:["smart","inky"], penguin:["peppy","waddle waddle"], flamingo:["fancy","pink-tastic"],
+  hedgehog:["sweet","prickle"], dolphin:["peppy","squeak"], dragon:["mighty","flame on"], unicorn:["peppy","sparkle"],
+  trex:["mighty","STOMP"], whale:["mighty","big splash"], frog:["sweet","ribbit"], pig:["lazy","oink"],
+  mouse:["sweet","squeaky"], duck:["peppy","quack"], snail:["lazy","sliiide"], bee:["peppy","buzz buzz"],
+  raccoon:["grumpy","scram"], kangaroo:["sporty","boing"], llama:["fancy","llama-zing"], wolf:["grumpy","awoo"],
+  parrot:["peppy","squawk"], zebra:["sporty","stripes"], shark:["grumpy","chomp"], lion:["mighty","ROAR"],
+  crocodile:["grumpy","snap snap"], eagle:["sporty","soar"], peacock:["fancy","fabulous"], giraffe:["fancy","lofty"],
+  dino:["mighty","dino-mite"], sdragon:["mighty","puff puff"], alien:["mystic","zorp"], robot:["smart","beep boop"],
+  ghost:["mystic","boo"], wizard:["mystic","abracadabra"], vampire:["mystic","bleh bleh"], genie:["mystic","poof"]
+};
+const VOICES = {
+  peppy:{
+    g:["Hiiii!","Hey hey hey!","Guess what?!","Hello, best friend!","OMG, hi!","Yoo-hoo!"],
+    o:["I'm in {p} and it's AMAZING, {cp}!","Surprise! I packed my bag and flew to {p}!","You studied so hard that I got a holiday in {p}! Thank you, {cp}!","Hello from {p}! I can't stop jumping!","I'm writing this from {p}, {c}! Can you believe it?","Big news: I'm on holiday in {p}, {cp}!","{p} is even better than in the photos!","I made it to {p}! Woo-hoo!"],
+    r:["It was the best day EVER!","I screamed with joy, {cp}!","I took about a million photos!","Everyone here smiled at me!","I did a little dance right there!","My heart is so full, {cp}!","I want to come back every year!","I told everyone about you!"],
+    c:["Keep it up, you're a star!","Study lots so we can travel again!","I miss you already, {cp}!","See you super soon!","Ten more right answers and I'll pack my bag again!","You're the best friend in the world!","Don't forget to practise today!","Big hugs from far away!"],
+    s:["Love,","Hugs and kisses,","Your happy friend,","XOXO,","Lots of love,","Your biggest fan,"]},
+  lazy:{
+    g:["Heyyy...","Oh, hi.","Hello there, friend.","Mmm, hi.","Hey, buddy.","Yawn... hi!"],
+    o:["So... I'm in {p}. It took ages to get here, {cp}.","I woke up and, guess what, I was in {p}.","Hi from {p}, {c}. Nice place for a nap.","I'm on holiday in {p}. Very relaxing, {cp}.","You worked hard, so I'm resting in {p} for both of us.","Greetings from {p}. I'm lying down as I write this.","{p} is great. Well, the food is great.","I came to {p} mainly for the snacks, {cp}."],
+    r:["Then I had a long nap.","After that, I needed a snack. Or three.","It made me sleepy, {cp}.","I watched it all from a comfy chair.","I almost fell asleep, but it was cool.","Best. Nap. Ever.","I didn't run once. Proud of me?","I'll tell you more after my siesta, {cp}."],
+    c:["Take a break too, OK? After your homework.","Don't study too hard... but study a bit.","Save me a cushion for when I'm back.","See you whenever I wake up.","Bring snacks next time, {cp}.","Keep going, slowly but surely.","I'm proud of you. Now, nap time.","Ten right answers a day keeps me travelling."],
+    s:["Sleepy hugs,","Yawn,","Chilled out,","Your relaxed friend,","Zzz,","Cosy love,"]},
+  grumpy:{
+    g:["Hmph. Hello.","Well, here's your postcard.","Fine. Hi.","Listen up.","Hello, I suppose.","Ugh, hi."],
+    o:["I'm in {p}. Don't get excited, {cp}.","You made me go to {p}. Happy now?","So I'm in {p}, {c}. It's... OK.","Someone sent me to {p}. Apparently that was you.","I didn't want to go to {p}. I'm a bit glad I did.","Greetings from {p}. Too many tourists, {cp}.","{p}. Hot. Busy. Fine, it's nice.","I'm writing from {p} because you made me. Kind of."],
+    r:["OK, I'll admit it. It was pretty great.","Fine, I smiled once. Only once, {cp}.","Not bad. Not bad at all.","I pretended to be bored. I wasn't.","Somebody stepped on my tail. Twice.","The queue was terrible, {cp}.","Don't tell anyone, but I loved it.","I've seen better. Actually, no, I haven't."],
+    c:["Keep studying. Don't make me come back early.","Your English is getting better. I noticed.","Don't forget your homework, {cp}.","I'll be back. Have my bed ready.","Fine, I miss you. A tiny bit.","Good job this week. There, I said it.","No mistakes tomorrow, OK?","Next time, send me somewhere quiet."],
+    s:["Grumpily yours,","Whatever,","Regards,","From your favourite grump,","Yours (sigh),","Bye,"]},
+  sporty:{
+    g:["Yo, champ!","Hey, team!","What's up, coach?","Ready? Go!","Hey, superstar!","High five!"],
+    o:["I ran all the way to {p}, {cp}!","Day one in {p}: already did 100 push-ups!","Greetings from {p}, {c}! Perfect for training!","I'm in {p} and I've already explored half the city!","You scored, so I got a trip to {p}, {cp}!","Made it to {p}! Personal best!","{p} is the perfect place for a morning jog!","Training camp in {p}? Yes, please, {cp}!"],
+    r:["I got to the top first, of course!","My legs are tired, but my heart is happy!","I raced a local and won, {cp}!","I stretched, I ran, I conquered!","Ten out of ten, would run here again!","Then I did it all again, just for fun!","I warmed up, then I went for it!","Pure energy, {cp}!"],
+    c:["Your turn: ten right answers, go!","Keep training your English every day!","No pain, no gain, champ!","Stay strong and keep practising!","Let's beat your record next week!","Practice makes perfect, {cp}!","I believe in you, team!","Warm up your brain and go for it!"],
+    s:["Go team,","Your coach,","Sporty hugs,","Your training buddy,","Keep moving,","Champion regards,"]},
+  fancy:{
+    g:["Darling!","Bonjour, my dear!","Hello, gorgeous!","Dearest friend,","Ah, there you are!","Greetings, darling!"],
+    o:["I'm in {p}, darling. Naturally, {cp}.","{p} was simply waiting for someone like me.","Greetings from fabulous {p}, {c}!","I've arrived in {p}. Everyone is staring. I understand, {cp}.","You did so well that I'm in {p}, looking stunning.","A little trip to {p}. One must travel in style.","{p} is almost as elegant as me, {cp}.","Writing from a very chic café in {p}."],
+    r:["I posed for photos all afternoon.","Absolutely divine, {cp}.","I wore my best outfit, of course.","People asked for my autograph. Twice.","So glamorous, I almost fainted.","I had tea with a view. Very sophisticated.","Simply magnificent, darling.","I looked fabulous in every photo, {cp}."],
+    c:["Do keep studying, darling. It suits you.","Your English is getting so elegant!","Practise a little every day, like a star.","I'll bring you a souvenir. Something shiny.","Stay fabulous, {cp}!","Remember: grammar is the new black.","Kisses on both cheeks!","Until next time, my dear."],
+    s:["With style,","Kisses,","Fabulously yours,","Ciao,","Elegantly,","Mwah,"]},
+  sweet:{
+    g:["Hi, sweetie!","Hello, dear friend!","Hi there!","Hello, you!","Dear friend,","Hi hi!"],
+    o:["I'm in {p} and I thought about you, {cp}.","Thank you for studying so much! It brought me to {p}.","Hello from {p}, {c}! It's lovely here.","I'm having a cosy little trip to {p}.","I wish you were here in {p} with me, {cp}.","{p} is beautiful, and the people are so kind.","I found a quiet spot in {p} to write to you.","Look where I am! {p}!"],
+    r:["It made me smile all day, {cp}.","I made a new friend there!","I picked a little flower for you.","It was so pretty I wanted to cry a little.","I bought you a tiny present.","Everything was so peaceful.","I thought: my friend would love this!","It was a lovely, lovely day, {cp}."],
+    c:["I'm so proud of you!","Don't worry about mistakes. We all make them.","Keep practising, little by little.","Take care of yourself, OK?","I can't wait to see you again, {cp}.","You're doing great. Really!","Have a sweet day!","Remember to smile today."],
+    s:["With love,","Big hugs,","Your friend forever,","Love you lots,","Warmly,","Sweet dreams,"]},
+  smart:{
+    g:["Greetings!","Hello, fellow genius!","Dear student,","Salutations!","Hello, brilliant friend!","Hi! Fun fact incoming."],
+    o:["I'm in {p}, {c}. I've been taking notes, {cp}.","Hello from {p}. I've already visited three museums.","Interesting news: I'm in {p}!","Your excellent results paid for my research trip to {p}.","I'm studying {p} very carefully, {cp}.","Arrived in {p}. Time to learn some local words!","{p} is fascinating. I've filled half a notebook.","Writing to you from {p}, with my glasses on, {cp}."],
+    r:["I learned five new facts before lunch.","I counted everything. It was very satisfying, {cp}.","I asked the guide twelve questions.","My brain is so happy right now.","I wrote a short report about it. You're welcome.","My research says this place is awesome.","I took notes on every detail, {cp}.","It was even more interesting than a grammar book!"],
+    c:["Remember: practice beats talent!","Study smart, not just hard, {cp}.","Review your mistakes. That's where you learn.","Every new word is a new adventure!","Your brain is a muscle. Use it today!","I'll quiz you when I get back.","Keep learning, curious friend!","Knowledge is the best souvenir, {cp}."],
+    s:["Scientifically yours,","Best regards,","Your study buddy,","Cleverly,","Yours in learning,","Kind regards,"]},
+  mighty:{
+    g:["BEHOLD!","Hear me, friend!","ROAR! Hello!","Greetings, brave one!","Hello, tiny human!","Attention, please!"],
+    o:["I have arrived in {p}, {cp}!","The great land of {p} welcomes me!","From mighty {p}, {c}, I send my greetings!","I flew across the sea to reach {p}!","Thanks to your hard work, I now rule {p}. Sort of, {cp}.","{p} trembled when I arrived. In a good way.","Legends will speak of my trip to {p}!","I stomped all the way to {p}, {cp}!"],
+    r:["The ground shook with my happiness!","Everyone ran. Then they asked for selfies.","It was EPIC, {cp}!","I tried to be small. I failed.","I roared with joy. Car alarms went off.","It was a legendary day!","I accidentally knocked over a sign. Sorry!","Even I was impressed, {cp}!"],
+    c:["Study bravely, my friend!","Your English grows stronger every day!","Ten right answers is nothing for a hero like you!","Go forth and practise, {cp}!","Fear no grammar!","Keep your fire burning!","I shall return. With stories!","Be mighty today!"],
+    s:["Mightily yours,","ROAR,","Your legendary friend,","With great power,","Epically,","Fiercely,"]},
+  mystic:{
+    g:["Psst...","Greetings from beyond!","Hello, mortal!","Oooh, hello!","Hey, earthling!","Hello from the shadows!"],
+    o:["I magically appeared in {p}, {cp}.","I floated all the way to {p}. Nobody saw me.","Greetings from mysterious {p}, {c}!","My powers brought me to {p}. Your hard work helped, {cp}.","I've landed in {p}. The locals seem friendly.","{p} at night is my favourite thing.","I wished to see {p}, and here I am!","Hello from {p}. I'm invisible right now, {cp}."],
+    r:["Nobody noticed me. Perfect.","I scared a pigeon. Just a little, {cp}.","It was magical, in every sense.","I may have cast a tiny spell on it.","The moon looked amazing from there.","Very mysterious. Very cool, {cp}.","I appeared in a tourist's photo by accident!","I made it sparkle. You're welcome."],
+    c:["Use your powers wisely: do your homework!","I see a great future for you, {cp}.","Practise today and something magical will happen.","Keep studying, and I'll keep travelling.","Your English is getting spookily good!","I'll appear again soon. Watch out!","Don't forget: words are spells!","Until we meet again, {cp}..."],
+    s:["Mysteriously yours,","Boo,","Magically,","From the other side,","Spookily,","Until next moon,"]}
+};
+const PC_LINES = {
+  paris:["I climbed the Eiffel Tower. So many steps!","I ate three croissants for breakfast.","I saw the Mona Lisa. She's smaller than I thought.","I took a boat ride on the river Seine.","A painter in Montmartre drew my portrait.","At night, the tower sparkled like a giant diamond.","I tried to say 'merci' with a French accent.","I sat in a café and watched people go by."],
+  giza:["I saw the Great Pyramid. It's over 4,500 years old!","I rode a camel. It wasn't very polite.","I said hello to the Sphinx. It didn't answer.","The sand was so hot I danced across it.","I watched the sunset over the pyramids.","I went inside a pyramid. It was dark and narrow!","I found sand in my ears for days.","I tried to count the stones. I gave up at 312."],
+  london:["I heard Big Ben ring. BONG!","It rained, then it was sunny, then it rained again.","I rode on a red double-decker bus, upstairs!","I waved at the guards. They didn't move at all.","I drank a cup of tea with milk. Very British.","I took the Tube and got a bit lost.","I walked across Tower Bridge.","I said 'cheers' to everyone."],
+  newyork:["I visited the Statue of Liberty. She's huge!","I ate a hot dog in Central Park.","The buildings were so tall my neck hurt.","I saw the bright lights of Times Square.","Yellow taxis were everywhere, honking!","I took the ferry and the wind messed up my hair.","I ate a slice of pizza as big as my head.","Nobody sleeps in this city, so neither did I."],
+  rome:["I visited the Colosseum. Gladiators fought here!","I threw a coin into the Trevi Fountain.","I ate gelato. Then more gelato.","I pretended to be an emperor for an afternoon.","Pasta for lunch, pizza for dinner. Perfect.","There were old ruins on every corner.","I counted the cats near the Colosseum. So many!","I learned to say 'ciao' with my hands."],
+  agra:["I saw the Taj Mahal at sunrise. Wow.","It's made of white marble and it glows pink in the morning.","I saw its reflection in the long pool.","I tried a spicy curry. My mouth is still on fire!","Someone took my photo pretending to hold the dome.","A monkey stole my snack!","An emperor built it for his wife, a long time ago.","I ate sweets called jalebi. So sticky!"],
+  wall:["I walked on the Great Wall of China!","The wall is thousands of kilometres long.","There were so many steps! Up, down, up again.","I ate dumplings for lunch. Delicious!","I watched the wall disappear into the mountains.","I tried to use chopsticks. It took a while.","I stopped in a watchtower for a rest.","I shouted 'hello' and heard an echo."],
+  fuji:["I saw Mount Fuji with snow on top.","Cherry blossoms fell on my head like pink snow.","I ate sushi. Then ramen. Then more sushi.","I walked through a big red gate called a torii.","The trains here are super fast and always on time.","I bowed to say hello. Everyone bowed back!","I tried green tea ice cream.","I bought a little lucky cat that waves. For you!"],
+  sydney:["I saw the Opera House. It looks like big white sails.","I walked across the Harbour Bridge.","I went surfing at Bondi Beach. I fell off a lot.","I met a kangaroo. It boxed me. Gently.","It's summer in December here!","A koala was sleeping in a tree. Lucky koala.","I saw dolphins from the ferry!","I said 'G'day, mate!' to everyone."],
+  pisa:["I saw the Leaning Tower. It really leans!","I took the classic photo holding up the tower.","I climbed to the top. The floor felt wonky!","I ate the best pizza of my life.","The tower has been leaning for more than 800 years.","I tilted my head so the tower looked straight.","I drank a tiny, strong Italian coffee.","I bought a mini tower as a souvenir."]
+};
+const pick = a => a[Math.floor(Math.random()*a.length)];
+function writePostcard(placeId, petId, petName){
+  const [vk, cp] = PET_VOICE[petId] || ["sweet","yay"];
+  const V = VOICES[vk], P = POSTCARDS.find(x=>x.id===placeId);
+  const lines = shuffle(PC_LINES[placeId]).slice(0,2);
+  let used = false;
+  const fill = s => s.replace(/\{p\}/g, P.n).replace(/\{c\}/g, P.c).replace(/,? \{cp\}/g, m => {
+    if(used) return ""; used = true; return m.replace("{cp}", cp);
+  });
+  const g = fill(pick(V.g)), o = fill(pick(V.o)), l1 = lines[0];
+  let r = fill(pick(V.r));
+  const l2 = lines[1], c = fill(pick(V.c));
+  if(!used) r = r.replace(/([.!?]+)$/, `, ${cp}$1`);
+  return {g, body:`${o} ${l1} ${r} ${l2}`, c, s:pick(V.s), name:petName};
 }
 
 /* open straight on the only exam / week when there's just one */
