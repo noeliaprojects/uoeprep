@@ -140,7 +140,7 @@ function pet(){
       <span class="sc-bar"><i style="width:${Math.min(100,Math.round(todayCount()/GOAL*100))}%"></i></span></div>
     <div class="sc-week" aria-hidden="true">${weekDots()}</div>
   </div>
-  ${state.tickets>0?`<button type="button" class="menu-btn scratch-btn" id="scr"><span class="t">🎟️ Scratch card</span><span class="s">${state.tickets} waiting</span><span class="arr" aria-hidden="true">→</span></button>`:""}
+  ${scratchBox()}
   ${menu([
     {id:"gamesb", t:"Games", s:`play with ${a.name}`},
     {id:"shopb", t:"Shop", s:"pets & places"},
@@ -1384,13 +1384,12 @@ function postcards(){
   const have = state.postcards || [], seen = new Set(have.map(c=>c.id));
   $app.innerHTML = `${header()}
   <div class="unit-head"><span class="label">${seen.size} / ${POSTCARDS.length} places</span><h2>My postcards</h2></div>
-  ${scratchBox()}
+  <p class="note">Your pets travel the world and write to you. Win postcards with scratch cards.</p>
   <div class="pc-grid">${have.map((c,i)=>({c,i})).reverse().map(({c,i})=>{ const pet = petById(c.pet);
       return `<button type="button" class="pc-item" data-i="${i}">${postcardFront(c.id, pet?pet.e:"", true)}<span class="pc-cap">From ${esc(c.m.name)}</span></button>`; }).join("")}
     ${POSTCARDS.filter(p=>!seen.has(p.id)).map(()=>`<div class="pc-item locked"><div class="scene small"><span class="pc-q">?</span></div><span class="pc-cap">Not yet</span></div>`).join("")}</div>`;
   bindBack({name:"pet"});
   $app.querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>go({name:"postcardView", i:+b.dataset.i}));
-  const sc = document.getElementById("scr"); if(sc) sc.onclick=()=>go({name:"scratch"});
 }
 function postcardView(){
   const c = (state.postcards||[])[view.i]; if(!c){ go({name:"postcards"}); return; }
