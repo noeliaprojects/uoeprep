@@ -7,6 +7,9 @@ const VOCAB_SIZE = 24;
 
 let state = {best:{}, coins:0, pets:{}, active:null, cards:{}, lastTest:{}, places:{garden:true}, place:"garden", days:{}, tickets:0, lastTicket:null, pending:null, photos:[], postcards:[], gc:{d:"",n:0}, best60:0};
 try{ const raw = localStorage.getItem(STORE); if(raw) state = Object.assign(state, JSON.parse(raw)); }catch(e){}
+/* pet names are typed by the student: keep only safe characters */
+const cleanName = n => String(n==null?"":n).replace(/[<>&"'`\\]/g,"").trim().slice(0,16);
+if(state.pets && typeof state.pets==="object") for(const k in state.pets) state.pets[k] = cleanName(state.pets[k]);
 function save(){ try{ localStorage.setItem(STORE, JSON.stringify(state)); }catch(e){} }
 
 const $app = document.getElementById("app");
@@ -153,7 +156,7 @@ function pet(){
   if(view.rename){
     const inp = document.getElementById("pname"); inp.focus(); inp.select();
     document.getElementById("rn").onsubmit = e => {
-      e.preventDefault(); const n = inp.value.trim().slice(0,16);
+      e.preventDefault(); const n = cleanName(inp.value);
       if(n){ state.pets[state.active] = n; save(); } go({name:"pet"});
     };
   } else document.getElementById("ren").onclick=()=>go({name:"pet", rename:true});
