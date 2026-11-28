@@ -586,3 +586,12 @@ body.has-tabs .wrap{padding-bottom:110px}
 .btn.amber-btn{background:var(--ink)}
 .amber-num{color:var(--ink)!important}
 .entry .ex b,.fc-ex b,.explain-body .exs b,.pairs dd b{color:var(--biro)}
+/* audit fixes */
+button,a{touch-action:manipulation}
+html{scroll-padding-bottom:96px}
+.pet-home .scene-pet:focus-visible{outline:3px solid var(--ink);outline-offset:4px;border-radius:50%}
+.stile:hover,.menu-btn:hover:not(:disabled),.big:hover{filter:brightness(.97)}
+.tab:hover{color:var(--ink)}
+.hello:hover .av{transform:rotate(-6deg)}
+.hello .av{transition:transform .15s}
+@media (prefers-reduced-motion:reduce){.hello .av{transition:none}}
