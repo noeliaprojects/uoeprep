@@ -595,3 +595,4 @@ html{scroll-padding-bottom:96px}
 .hello:hover .av{transform:rotate(-6deg)}
 .hello .av{transition:transform .15s}
 @media (prefers-reduced-motion:reduce){.hello .av{transition:none}}
+.tab-pet{font-size:22px;line-height:22px;height:22px;display:block}

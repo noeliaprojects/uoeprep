@@ -89,7 +89,7 @@ function tabBar(){
   const a = activePet(), cur = t => t===tab ? ' aria-current="page"' : "";
   bar.innerHTML = `<div class="in">
     <button type="button" class="tab" data-tab-go="learn"${cur("learn")}><span class="ic">${TAB_IC.learn}</span><span class="nm">Learn</span></button>
-    <button type="button" class="tab" data-tab-go="pet"${cur("pet")}><span class="ic">${TAB_IC.pet}</span><span class="nm">${a?esc(a.name):"Pet"}</span></button>
+    <button type="button" class="tab" data-tab-go="pet"${cur("pet")}><span class="ic">${a?`<span class="tab-pet" aria-hidden="true">${a.pet.e}</span>`:TAB_IC.pet}</span><span class="nm">${a?esc(a.name):"Pet"}</span></button>
     <button type="button" class="tab" data-tab-go="games"${cur("games")}><span class="ic">${TAB_IC.games}</span><span class="nm">Games</span></button></div>`;
   bar.querySelectorAll("[data-tab-go]").forEach(b=>b.onclick=()=>{
     const t = b.dataset.tabGo;
