@@ -73,7 +73,33 @@ function exHTML(ex){ return esc(ex).replace(/\{([^}]+)\}/, "<b>$1</b>"); }
 /* ── router ── */
 let view = {name:"exams"};
 function go(v){ view = v; render(); window.scrollTo(0,0); }
+const TAB_OF = {exams:"learn", weeks:"learn", week:"learn", grammar:"learn", explainList:"learn", explain:"learn", exerciseList:"learn", vocab:"learn", flash:"learn",
+  pet:"pet", shop:"pet", myPets:"pet", places:"pet", postcards:"pet", postcardView:"pet", photos:"pet", games:"games"};
+const TAB_IC = {
+  learn:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2z"/><path d="M8 7h6"/></svg>`,
+  pet:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="15" r="4.5"/><circle cx="5.5" cy="9" r="2"/><circle cx="18.5" cy="9" r="2"/><circle cx="9" cy="5" r="1.8"/><circle cx="15" cy="5" r="1.8"/></svg>`,
+  games:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="7" width="19" height="11" rx="5"/><path d="M8 10.5v4M6 12.5h4M16 11h.01M18 13.5h.01"/></svg>`
+};
+function tabBar(){
+  let bar = document.getElementById("tabbar");
+  const tab = TAB_OF[view.name];
+  document.body.classList.toggle("has-tabs", !!tab);
+  if(!tab){ if(bar) bar.remove(); return; }
+  if(!bar){ bar = document.createElement("nav"); bar.id = "tabbar"; bar.className = "tabbar"; bar.setAttribute("aria-label","Main"); document.body.appendChild(bar); }
+  const a = activePet(), cur = t => t===tab ? ' aria-current="page"' : "";
+  bar.innerHTML = `<div class="in">
+    <button type="button" class="tab" data-tab-go="learn"${cur("learn")}><span class="ic">${TAB_IC.learn}</span><span class="nm">Learn</span></button>
+    <button type="button" class="tab" data-tab-go="pet"${cur("pet")}><span class="ic">${TAB_IC.pet}</span><span class="nm">${a?esc(a.name):"Pet"}</span></button>
+    <button type="button" class="tab" data-tab-go="games"${cur("games")}><span class="ic">${TAB_IC.games}</span><span class="nm">Games</span></button></div>`;
+  bar.querySelectorAll("[data-tab-go]").forEach(b=>b.onclick=()=>{
+    const t = b.dataset.tabGo;
+    if(t==="learn") go({name:"exams"});
+    else if(t==="pet") go({name:"pet"});
+    else go({name: activePet() ? "games" : "pet"});
+  });
+}
 function render(){
+  tabBar();
   ({exams, weeks, week:weekView, grammar, explainList, explain, exerciseList, vocab, practice, result, pet, shop, myPets, flash, study, ftest, places, games, wsearch, hangman, anagram, memory, timer, scratch, photos, postcards, postcardView})[view.name]();
 }
 function header(backTo, crumb){
@@ -89,20 +115,19 @@ function menu(items){
 
 /* 1 · exam */
 function exams(){
+  const ap = activePet(), st = streak();
   $app.innerHTML = `
+  <button type="button" class="hello" id="petrow">
+    <span class="av" aria-hidden="true">${ap?ap.pet.e:"🥚"}</span>
+    <span class="hi">${ap?`Hi! ${esc(ap.name)} is<br>waiting for you`:"Get your<br>free pet!"}</span>
+    <span class="chips2">${st?`<span class="pill" aria-label="${st} days in a row">🔥 ${st}</span>`:""}${state.tickets>0?`<span class="pill" aria-label="Scratch card waiting">🎟️ ${state.tickets}</span>`:""}<span class="pill gold" aria-label="${state.coins} coins">🪙 ${state.coins}</span></span>
+  </button>
   <div class="top"><div class="brand"><span class="label">Use of English</span><h1>Choose your exam</h1></div></div>
   <div class="menu">${EXAMS.map(x=>{
     const ok = x.weeks.length>0;
     return `<button type="button" class="menu-btn" data-exam="${x.id}" ${ok?"":"disabled"}>
       <span class="t">${esc(x.name)}</span>${ok?'<span class="arr" aria-hidden="true">→</span>':'<span class="soon">Coming soon</span>'}</button>`;
   }).join("")}</div>
-  <button type="button" class="pet-row" id="petrow">
-    <span class="pe" aria-hidden="true">${activePet()?activePet().pet.e:"🥚"}</span>
-    <span class="t">${activePet()?esc(activePet().name):"Get your free pet"}</span>
-    ${streak()?`<span class="streak-chip" aria-label="${streak()} days in a row">🔥 ${streak()}</span>`:""}
-    ${state.tickets>0?`<span class="ticket" aria-label="Scratch card waiting">🎟️ ${state.tickets}</span>`:""}
-    ${coinBadge()}
-  </button>
   ${installHTML()}`;
   $app.querySelectorAll("[data-exam]").forEach(b=>b.onclick=()=>go({name:"weeks", exam:b.dataset.exam}));
   document.getElementById("petrow").onclick=()=>go({name:"pet"});
@@ -252,12 +277,12 @@ function weekView(){
   $app.innerHTML = `
   ${header(null, exam().name)}
   <div class="unit-head"><h2>${esc(weekName(w))}</h2></div>
-  ${menu([
-    {id:"g", t:"Grammar", s:`${w.grammar.length} topics`},
-    {id:"p", t:"Phrasal verbs", s:`${w.phrasal.entries.length} phrasal verbs`},
-    {id:"c", t:"Collocations", s:`${w.colloc.entries.length} collocations`},
-    {id:"f", t:"Fixed phrases", s:`${w.fixed.entries.length} phrases`}
-  ])}
+  <div class="stiles">
+    <button type="button" class="stile" id="g"><span class="t">Grammar</span><span class="s">${w.grammar.length} topics</span></button>
+    <button type="button" class="stile" id="p"><span class="t">Phrasal verbs</span><span class="s">${w.phrasal.entries.length} phrasal verbs</span></button>
+    <button type="button" class="stile" id="c"><span class="t">Collocations</span><span class="s">${w.colloc.entries.length} collocations</span></button>
+    <button type="button" class="stile" id="f"><span class="t">Fixed phrases</span><span class="s">${w.fixed.entries.length} phrases</span></button>
+  </div>
   <button type="button" class="menu-btn flash" id="fl"><span class="t">Flashcards</span><span class="s">${learned(w)[0]} / ${learned(w)[1]} learned</span><span class="arr" aria-hidden="true">→</span></button>`;
   bindBack({name:"weeks", exam:view.exam});
   document.getElementById("g").onclick=()=>go(at({name:"grammar"}));
